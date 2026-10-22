@@ -76,7 +76,7 @@ export const assemblyGuideSteps: GuideStep[] = [
       },
       {
         title: "Préparer les exemplaires",
-        text: "Dans « Convocations & pièces », affichez la convocation, le formulaire de correspondance et le pouvoir. Utilisez « Imprimer ce document » pour imprimer ou enregistrer chaque document en PDF, puis joignez les fichiers listés dans le dossier.",
+        text: "Dans « Convocations & pièces », téléchargez les PDF de travail de la convocation, de la correspondance et du pouvoir. Faites relire les trois documents et leurs pièces, déposez le rapport signé dans Documents, puis enregistrez la relecture dans « Avant utilisation officielle ». Téléchargez ensuite l’édition relue et joignez les fichiers listés. L’impression du navigateur reste un aperçu de travail.",
       },
       {
         title: "Réaliser la notification",
@@ -200,7 +200,7 @@ export const assemblyGuideSteps: GuideStep[] = [
       },
       {
         title: "Relire et imprimer",
-        text: "Dans « Procès-verbal & signatures », vérifiez le bureau, les textes retenus, les résultats, les noms et les réserves. Utilisez « Imprimer ce document ». Faites également signer et certifier la feuille de présence.",
+        text: "Dans « Procès-verbal & signatures », vérifiez le bureau, les textes retenus, les résultats, les noms et les réserves dans les PDF de travail du PV et de la présence. Faites-les relire, déposez le rapport signé puis enregistrez la relecture dans « Avant utilisation officielle ». Téléchargez l’édition relue pour la faire signer et faites certifier la feuille de présence.",
       },
       {
         title: "Conserver les documents signés",

@@ -1,0 +1,7 @@
+{
+  "description": "Fictif : 600/400 tantièmes ; 1000 de provisions courantes, 600 de charges ; travaux appelés 500, réalisés 300, non payés. Aucune banque. Après proposition de répartition : créances propriétaires 1100, dettes fournisseurs 900 et solde travaux 200.",
+  "state_debit": 1100,
+  "state_credit": 1100,
+  "pending": {"voted":"500.00","expenses":"300.00","paid":"0.00","funding":"500.00","waiting":"200.00","receivable":"0.00"},
+  "adjustments": {"A":"-240.00","B":"-160.00"}
+}

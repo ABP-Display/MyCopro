@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import { Empty, Icon } from "./ui";
+import { DocumentTemplates } from "./DocumentTemplates";
 type Row = Record<string, any>;
 const size = (value: number) =>
   value >= 1048576
@@ -8,6 +9,14 @@ const size = (value: number) =>
     : `${Math.ceil(value / 1024)} Ko`;
 
 export function Documents({
+  manager,
+  section = "library",
+}: { manager: boolean; section?: string }) {
+  if (section === "templates") return manager ? <DocumentTemplates /> : null;
+  return <DocumentLibrary manager={manager} section={section} />;
+}
+
+function DocumentLibrary({
   manager,
   section = "library",
 }: {

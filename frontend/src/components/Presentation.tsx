@@ -63,15 +63,15 @@ const modules = [
     icon: "folder",
     title: "Des documents qui se retrouvent",
     tag: "Disponible",
-    text: "Classez les pièces, conservez leurs versions et choisissez les documents à partager. Les téléchargements passent par les contrôles d’accès.",
-    detail: "PDF et images · versions · archivage",
+    text: "Classez les pièces, conservez leurs versions et préparez vos courriers avec des modèles éditables. Choisissez ensuite les documents à partager.",
+    detail: "Modèles préremplis · PDF privés · versions",
   },
   {
     icon: "panel",
     title: "Un espace pour les copropriétaires",
     tag: "Première version",
-    text: "Un portail de lecture pour retrouver son compte personnel, les lots, les documents et les annonces publiées, depuis un ordinateur ou un téléphone.",
-    detail: "Partage explicite · données privées protégées",
+    text: "Un portail de lecture pour retrouver son solde, parcourir son historique, filtrer une période et télécharger son relevé PDF ou CSV, ainsi que consulter les documents publiés.",
+    detail: "Historique paginé · relevés privés · documents partagés",
   },
   {
     icon: "calculator",
@@ -84,7 +84,7 @@ const modules = [
 const roadmap = [
   [
     "Comptabilité à approfondir",
-    "Validation métier des modèles, aides et prêts collectifs, mode simplifié et formats bancaires supplémentaires. Les annexes contrôlées et les restitutions d’avances sont disponibles.",
+    "Relecture métier réelle des modèles, aides et prêts collectifs, mode simplifié et formats bancaires supplémentaires. Les PDF de travail et dossiers de référence sont disponibles avec checklist et rapport de relecture. Aucune certification automatique.",
   ],
   [
     "AG et services connectés",

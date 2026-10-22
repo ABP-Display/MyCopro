@@ -11,10 +11,6 @@ import {
 import "./operations.css";
 import { PartnerRecords } from "./PartnerRecords";
 type Data = Record<string, any>;
-const money = (v: string) =>
-  new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(
-    Number(v),
-  );
 
 export function HomeInsights({
   onNavigate,
@@ -87,73 +83,7 @@ export function HomeInsights({
   );
 }
 
-export function PersonalAccount() {
-  const [data, setData] = useState<Data | null>(null);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    let active = true;
-    api<Data>("operations/my-account")
-      .then((d) => {
-        if (active) setData(d);
-      })
-      .catch((e) => {
-        if (active) setError(e.message);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-  return (
-    <section className="panel ops-surface">
-      <div className="panel-heading">
-        <div>
-          <h2>Mon compte copropriétaire</h2>
-          <p>Vos mouvements personnels restent privés.</p>
-        </div>
-        {data && <strong>{money(data.balance)}</strong>}
-      </div>
-      {error && (
-        <p role="alert" className="alert">
-          {error}
-        </p>
-      )}
-      {data && (
-        <>
-          <p>
-            {Number(data.balance) > 0
-              ? "Solde débiteur à vérifier avec le gestionnaire."
-              : Number(data.balance) < 0
-                ? "Votre compte présente un crédit."
-                : "Votre compte est équilibré."}
-          </p>
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Libellé</th>
-                  <th>Débit</th>
-                  <th>Crédit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.rows.map((r: Data, i: number) => (
-                  <tr key={i}>
-                    <td>{r.date}</td>
-                    <td>{r.label}</td>
-                    <td>{money(r.debit)}</td>
-                    <td>{money(r.credit)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="operations-note">{data.note}</p>
-        </>
-      )}
-    </section>
-  );
-}
+export { PersonalAccount } from "./PersonalAccount";
 
 export function Operations({ section }: { section: string }) {
   if (["suppliers", "contracts", "certificates", "notices"].includes(section))

@@ -3,6 +3,7 @@ import { api, newOperationId } from "../api";
 import { Icon, Empty } from "./ui";
 import "./accounting-cycle.css";
 import { RegulatoryAnnexes } from "./RegulatoryAnnexes";
+import { DocumentValidation } from "./DocumentValidation";
 
 type Row = Record<string, any>;
 type Field = {
@@ -1252,6 +1253,8 @@ export function AccountingCycle({ section }: { section: string }) {
             </p>
             <p className="muted">{data.data.note}</p>
           </div>
+          <DocumentValidation key={year} kind="accounting" id={year} document="annexes" revision={data.data.regulatory?.source_hash}/>
+          <p className="muted">Aperçu de travail. Utilisez le PDF de l’édition relue pour conserver la référence de validation.</p>
           {data.data.regulatory ? <RegulatoryAnnexes pack={data.data.regulatory} /> : data.data.annexes.map((a: Row) => (
             <section className="panel" key={a.number}>
               <h2>

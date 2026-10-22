@@ -12,8 +12,10 @@ Parcours livré le 15 octobre 2026, pour un syndic bénévole ou coopératif en 
    comparatifs disponibles et les points à corriger.
 4. Résoudre les erreurs. Une case vide signifie « non renseigné », jamais zéro.
    Créer les exercices suivants et saisir leurs budgets pour compléter N+1/N+2.
-5. Imprimer le dossier en PDF, vérifier la pagination et les montants, puis le
-   déposer dans **Documents**. Conserver aussi l’archive JSON pour les données sources.
+5. Télécharger le PDF de travail, faire relire les annexes et décomptes, déposer
+   le rapport signé dans **Documents**, puis enregistrer la relecture dans
+   **Avant utilisation officielle**. Télécharger l’édition relue et la déposer
+   dans Documents pour l’AG. Conserver aussi l’archive JSON des données sources.
 6. Dans la préparation de l’AG, choisir l’exercice présenté et relire son dossier.
    Le modèle **Approbation des comptes** demande les cinq annexes, le projet d’état
    individuel de répartition et les modalités de consultation des justificatifs.
@@ -21,6 +23,10 @@ Parcours livré le 15 octobre 2026, pour un syndic bénévole ou coopératif en 
 7. Confirmer la relecture, enregistrer puis figer la convocation. Une modification
    des données annuelles après relecture oblige à recharger et vérifier le dossier.
    Son empreinte et sa version sont conservées dans le dossier convoqué.
+
+Le [guide de validation des documents](VALIDATION-DOCUMENTS.md) détaille les
+checklists, les PDF fictifs de référence, les blocages et la relecture métier
+réelle restant à réaliser avant un usage officiel.
 
 ### Ce que les contrôles vérifient
 

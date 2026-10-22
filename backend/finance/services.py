@@ -15,6 +15,11 @@ from pathlib import Path
 import csv
 with (Path(__file__).parent/'data/init_french-avance.csv').open(encoding='utf-8-sig',newline='') as chart_file:
     CHART.update({row['code']:row['name'] for row in csv.DictReader(chart_file,delimiter=';')})
+CHART.update({'65':'Montant alloué au conseil syndical pour sa délégation de pouvoirs',
+              '106':'Provisions pour travaux au titre de la délégation au conseil syndical',
+              '674':'Charges au titre de la délégation de pouvoirs au conseil syndical',
+              '706':'Provisions au titre de la délégation de pouvoirs au conseil syndical',
+              '1032':'Avances prévues par le plan pluriannuel de travaux adopté'})
 
 
 def amount(value, positive=True):

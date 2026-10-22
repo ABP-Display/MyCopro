@@ -9,6 +9,11 @@ de l’AG. Les versions jointes doivent correspondre au dossier relu. Si les com
 changent, recharger et relire avant de figer la convocation. Voir le [guide des
 documents et financements](DOCUMENTS-FONDS-AVANCES.md).
 
+La zone **Avant utilisation officielle** permet de télécharger les PDF de travail,
+de consigner une relecture réelle avec son rapport signé, puis d’obtenir une édition
+relue. Les impressions du navigateur restent des aperçus de travail. Voir le
+[guide de validation](VALIDATION-DOCUMENTS.md) avant de transmettre les documents.
+
 ## 1. Créer l’AG et ses résolutions — Avant l’AG
 
 Commencez par décrire la réunion et ce que les copropriétaires devront décider.
@@ -37,7 +42,7 @@ Une fois le dossier relu, conservez la version qui sera transmise à chaque copr
 
 1. **Relire puis figer le dossier** : Dans « Préparer une AG », corrigez les points signalés et contrôlez la date limite affichée. Cliquez sur « Figer le dossier de convocation » lorsque tout est prêt. Les textes, destinataires, droits et versions des pièces sont alors conservés.
 
-2. **Préparer les exemplaires** : Dans « Convocations & pièces », affichez la convocation, le formulaire de correspondance et le pouvoir. Utilisez « Imprimer ce document » pour imprimer ou enregistrer chaque document en PDF, puis joignez les fichiers listés dans le dossier.
+2. **Préparer les exemplaires** : Dans « Convocations & pièces », téléchargez les PDF de travail de la convocation, de la correspondance et du pouvoir. Faites relire les trois documents, déposez le rapport signé dans Documents puis enregistrez la relecture. Téléchargez l’édition relue et joignez les fichiers listés dans le dossier.
 
 3. **Réaliser la notification** : Utilisez votre mode de notification à l’extérieur de Copro. Le bouton « Préparer un courriel » ouvre votre messagerie : ajoutez les pièces et vérifiez le contenu avant tout envoi. Le courriel préparé ne vaut pas, à lui seul, notification recommandée.
 
@@ -103,7 +108,7 @@ Le procès-verbal reprend les décisions conservées pendant la séance.
 
 1. **Préparer le document final** : Au bas de « Séance & votes enregistrés », complétez les remarques générales, confirmez la relecture et cliquez sur « Préparer le procès-verbal ». Un vote doit avoir été enregistré pour chaque résolution.
 
-2. **Relire et imprimer** : Dans « Procès-verbal & signatures », vérifiez le bureau, les textes retenus, les résultats, les noms et les réserves. Utilisez « Imprimer ce document ». Faites également signer et certifier la feuille de présence.
+2. **Relire et imprimer** : Dans « Procès-verbal & signatures », vérifiez le bureau, les textes retenus, les résultats, les noms et les réserves dans les PDF de travail du PV et de la présence. Après relecture réelle et rapport signé, enregistrez la décision puis téléchargez l’édition relue pour la faire signer. Faites également certifier la feuille de présence.
 
 3. **Conserver les documents signés** : Faites signer les documents à l’extérieur de Copro., puis ajoutez les scans dans « Documents ». Revenez au PV, choisissez la version du PV signé et celle de la feuille de présence, indiquez la date réelle de signature et cliquez sur « Rattacher les documents signés ».
 

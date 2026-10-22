@@ -7,7 +7,6 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from core.views import manager_required, payload
-from core.access import member_required, allow_former_owner
 from core.models import Owner
 from finance.views import errors
 from finance.models import Line, Expense, AuditEvent
@@ -555,31 +554,5 @@ def metrics(request):
             "debtor_count": debtor_count,
             "draft_reminders": draft_count,
             "note": "Analyses déterministes des données saisies ; aucune IA ni notification extérieure.",
-        }
-    )
-
-
-@require_http_methods(["GET"])
-@member_required
-@allow_former_owner
-def personal_account(request):
-    owner = getattr(request.user, "owner_profile", None)
-    if owner is None:
-        return JsonResponse({"error": "Compte copropriétaire requis."}, status=403)
-    query = owner_lines(owner)
-    return JsonResponse(
-        {
-            "balance": str(owner_balance(owner)),
-            "date": timezone.localdate(),
-            "rows": [
-                {
-                    "date": line.entry.date,
-                    "label": line.entry.label,
-                    "debit": str(line.debit),
-                    "credit": str(line.credit),
-                }
-                for line in query.reverse()[:100]
-            ],
-            "note": "Solde comptable cumulé des comptes 450 jusqu’à aujourd’hui. Les 100 derniers mouvements sont affichés.",
         }
     )

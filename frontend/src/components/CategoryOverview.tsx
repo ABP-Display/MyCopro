@@ -110,6 +110,8 @@ export const categoryHelp: Record<
     items: {
       library:
         "Déposez des PDF ou images, retrouvez un document, ajoutez une version et gérez son partage. L’archivage masque un document sans effacer son historique.",
+      templates:
+        "Préremplissez un courrier, une demande de devis ou d’intervention depuis l’annuaire, corrigez le texte puis créez un PDF privé après relecture.",
       folders:
         "Créez et renommez des dossiers pour organiser les contrats, factures, comptes rendus et autres documents.",
     },

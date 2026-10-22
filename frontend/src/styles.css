@@ -1955,6 +1955,53 @@ input::placeholder {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
+.vote-calculator form {
+  display: grid;
+  gap: 20px;
+}
+.vote-calculator .vote-toolbar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+.vote-calculator .vote-entry-mode {
+  margin: 0;
+  max-width: none;
+}
+.vote-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.vote-calculator form > .tool-actions {
+  margin-top: 0;
+}
+.vote-calculator :is(input, select),
+.vote-calculator .button {
+  min-height: 42px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 20px;
+}
+.vote-calculator .button {
+  align-self: end;
+  white-space: normal;
+}
+.vote-calculator label {
+  min-width: 0;
+  align-content: start;
+}
+.vote-calculator .roster-editor fieldset {
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
 .calculator fieldset {
   min-width: 0;
   display: grid;
@@ -2044,6 +2091,12 @@ input::placeholder {
   display: grid;
   gap: 14px;
 }
+.split-directory-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #68776d;
+}
 .split-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 36px;
@@ -2055,6 +2108,21 @@ input::placeholder {
 }
 .tool-output {
   margin-top: 28px;
+}
+.tool-output .tool-money {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.tool-output tfoot {
+  background: #f2f5ee;
+  font-weight: 600;
+}
+.tool-period-note {
+  padding: 16px 22px 0;
+  color: #68776d;
+  font-size: 12px;
+  line-height: 1.7;
 }
 .tool-total {
   padding: 22px;
@@ -2200,6 +2268,9 @@ input::placeholder {
   resize: vertical;
 }
 @media (max-width: 700px) {
+  .vote-calculator .vote-toolbar {
+    grid-template-columns: 1fr;
+  }
   .calculator-fields {
     grid-template-columns: 1fr;
   }
@@ -2748,10 +2819,36 @@ input::placeholder {
   }
 }
 
+.roster-editor {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.roster-editor > p {
+  margin: 0;
+}
 .roster-editor fieldset {
   border: 0;
   padding: 0;
   min-width: 0;
+}
+.roster-toolbar {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.roster-toolbar > label {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.roster-toolbar > .button {
+  min-height: 42px;
+  white-space: normal;
+}
+.roster-row > .button {
+  justify-self: start;
 }
 .roster-row {
   display: grid;
@@ -2810,6 +2907,14 @@ input::placeholder {
   }
 }
 @media (max-width: 600px) {
+  .roster-toolbar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .roster-toolbar > .button {
+    justify-self: start;
+  }
   .roster-row {
     grid-template-columns: 1fr;
   }

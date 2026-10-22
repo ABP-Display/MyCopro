@@ -299,6 +299,8 @@ def build_packet(workflow, retain=False):
         "consultation": text(config.get("consultation"), 2000),
         "organizer": text(config.get("organizer"), 200),
         "return_address": text(config.get("return_address"), 500),
+        "building_address": text(config.get("building_address"), 1000, required=False),
+        "return_email": text(config.get("return_email"), 254, required=False),
     }
 
 

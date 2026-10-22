@@ -72,6 +72,7 @@ export const sections: Record<
     icon: "folder",
     items: [
       ["library", "Bibliothèque"],
+      ["templates", "Modèles à remplir"],
       ["folders", "Dossiers"],
     ],
   },

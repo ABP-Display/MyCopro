@@ -57,7 +57,7 @@ export function RosterEditor({
         </p>
       )}
       <fieldset disabled={disabled}>
-        <div className="tool-actions">
+        <div className="roster-toolbar">
           <button
             className="button secondary"
             type="button"

@@ -35,3 +35,26 @@ class Version(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     class Meta:
         ordering = ["-id"]
+
+
+class DossierReview(models.Model):
+    """Append-only declarations; a decision always refers to one exact document source."""
+    kind = models.CharField(max_length=12, choices=[('accounting','Comptes'),('assembly','Convocation'),('minutes','Procès-verbal')])
+    year = models.ForeignKey('finance.FiscalYear', on_delete=models.PROTECT, null=True)
+    workflow = models.ForeignKey('governance.AssemblyWorkflow', on_delete=models.PROTECT, null=True)
+    source_hash = models.CharField(max_length=64)
+    model_version = models.CharField(max_length=40)
+    verdict = models.CharField(max_length=12, choices=[('approved','Validé'),('rejected','À corriger'),('withdrawn','Validation retirée')])
+    reviewer = models.CharField(max_length=200)
+    qualification = models.CharField(max_length=200)
+    reviewed_on = models.DateField()
+    checks = models.JSONField(default=dict)
+    observations = models.TextField(max_length=10000)
+    proof = models.ForeignKey(Version, on_delete=models.PROTECT)
+    proof_checksum = models.CharField(max_length=64)
+    source_snapshot = models.JSONField()
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['-id']
+        constraints = [models.CheckConstraint(condition=(models.Q(kind='accounting',year__isnull=False,workflow__isnull=True) | models.Q(kind__in=['assembly','minutes'],year__isnull=True,workflow__isnull=False)),name='dossier_review_subject')]

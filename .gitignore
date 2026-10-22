@@ -14,4 +14,6 @@ backend/media/
 dist-pages/
 backups/
 *.coprobackup
+output/pdf/
+tmp/pdfs/
 .backup-lock

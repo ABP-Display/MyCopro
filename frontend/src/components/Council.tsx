@@ -10,6 +10,7 @@ import { CredentialsDialog, type Credentials } from "./Access";
 import { BrandMark } from "./BrandMark";
 import { MemberPortal } from "./MemberPortal";
 import "./council.css";
+import { DocumentValidation } from "./DocumentValidation";
 
 type Row = Record<string, any>;
 export type CouncilContext = {
@@ -152,6 +153,7 @@ export function Council({ section = "mandates" }: { section?: string }) {
           const r = await api<Row>("council/controls");
           if (live) setItems(r.items);
         } else if (["accounts", "history"].includes(section)) {
+          if(section==="accounts" && kind==="validation") {setItems([]);setCount(0);setLoadedKey(dataKey);return;}
           if (
             ["ledger", "balance", "budget"].includes(kind) &&
             !selectedYear &&
@@ -1147,6 +1149,7 @@ export function Council({ section = "mandates" }: { section?: string }) {
                         balance: "Balance des comptes",
                         ledger: "Écritures détaillées",
                         budget: "Budget / réalisé",
+                        validation: "Dossier annuel & relecture",
                         banks: "Comptes bancaires",
                         statements: "Relevés et rapprochements",
                         works: "Travaux et sinistres",
@@ -1165,6 +1168,7 @@ export function Council({ section = "mandates" }: { section?: string }) {
                     "ledger",
                     "budget",
                     "statements",
+                    "validation",
                   ].includes(kind) && (
                     <label>
                       Exercice
@@ -1205,6 +1209,8 @@ export function Council({ section = "mandates" }: { section?: string }) {
                     />
                   )}
                 </div>
+              ) : kind==="validation" ? (
+                c.years.length>0?<DocumentValidation key={year||c.years[0]?.id} kind="accounting" id={year||c.years[0]?.id} document="annexes" revision={String(generation)}/>:<p>Créez un exercice comptable pour préparer le dossier annuel.</p>
               ) : (
                 <RecordList kind={kind} rows={items} versions={c.versions} />
               )}

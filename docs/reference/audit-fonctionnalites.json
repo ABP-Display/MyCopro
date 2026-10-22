@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "date": "2026-10-15",
+  "date": "2026-10-20",
   "scope": "Copro. / France / syndics bénévoles et coopératifs. Cible une ou plusieurs copropriétés ; application actuelle mono-copropriété. Cabinet professionnel exclu.",
   "source": "docs/reference/cahier-fonctionnalites.md",
   "source_revision": "benevole-cooperatif-2026-10-14",
@@ -34,13 +34,13 @@
     "Courriels préparés dans la messagerie ; pas d’envoi SMTP intégré pour les accès"
   ],
   "verification": {
-    "backend_tests": 221,
+    "backend_tests": 255,
     "backend_tests_result": "passed",
     "frontend": "TypeScript + Vite production build passed",
     "database": "PostgreSQL / base de test séparée",
     "legal": "Vérifications ponctuelles des sources officielles ; pas de certification juridique/comptable.",
-    "manual_ui": "Mandat fictif, soumission/recherche de devis, avis nominatif, préparation par trésorier, reprise par syndic, rapport indépendant et alerte après changement ; consultation des relevés et affichage mobile. Instance isolée fictive.",
-    "note": "221 tests PostgreSQL ; 24 nouveaux cas financiers, contrôles renforcés AG, build TypeScript/Vite et vérification visuelle sur copie fictive. Sauvegarde préalable base/documents chiffrée et relue.",
+    "manual_ui": "Dossier annuel fictif, formulaire de relecture et refus enregistré, PDF, lecture mobile 390 px, contrôle sans débordement horizontal ; copie Docker séparée, aucun dossier réel modifié pour les tests.",
+    "note": "255 tests PostgreSQL réussis, dont 11 nouveaux sur les modèles et relevés privés. TypeScript/Vite, PDF sur plusieurs pages et contrôles d’interface 1440/390 px avec API simulée. Les sauvegardes/reprises et scénarios de démonstration précédents sont conservés ; aucune validation métier réelle des modèles AG ajoutée.",
     "scope_review": "156 exigences conservées ; les parcours papier/manuels ne prouvent pas les prestataires connectés ou une certification de conformité.",
     "backup_tests": 4,
     "backup_integration": "passed: compte/écritures, deux versions, secret MFA, pièce perdue, interruption et reprise sur projets Docker jetables"
@@ -583,14 +583,18 @@
       "section": "4.2",
       "text": "États financiers et annexes obligatoires : situation financière et trésorerie, compte de gestion général, compte de gestion pour opérations courantes, compte de gestion pour travaux et opérations exceptionnelles, état des dettes et créances, annexes 1 à 5 (comparaison budget/réalisé, état des travaux, etc.).",
       "status": "partiel",
-      "assessment": "Cinq annexes structurées et imprimables, comparatifs disponibles, tiers identifiés non compensés, provisions avant régularisation, dates/détails travaux, contrôles grand livre et concordance, version/empreinte et instantanés. Aides/prêts/indemnités signalés pour états complémentaires ; conformité exhaustive des modèles à faire valider par métier.",
+      "assessment": "Cinq annexes et décomptes en PDF serveur, rubriques et comparatifs, soldes de tiers non compensés, financements 702/703/705 séparés, coûts 672 repris sur plusieurs exercices, contrôles et oracle fictif chiffré. Relecture déclarée avec rapport signé, checklist, empreinte des modèles/sources, historique et édition relue bloquée si périmée ou erronée. Validation métier réelle et états prêts/aides/délégations détaillés restant à réaliser.",
       "evidence": [
         "backend/finance/regulatory.py",
         "backend/finance/test_regulatory.py",
-        "frontend/src/components/RegulatoryAnnexes.tsx"
+        "frontend/src/components/RegulatoryAnnexes.tsx",
+        "backend/documents/review.py",
+        "backend/documents/pdf.py",
+        "backend/documents/test_review.py",
+        "docs/guides/VALIDATION-DOCUMENTS.md"
       ],
       "priority": "P0",
-      "next_step": "Cinq annexes structurées et imprimables, comparatifs disponibles, tiers identifiés non compensés, provisions avant régularisation, dates/détails travaux, contrôles grand livre et concordance, version/empreinte et instantanés. Aides/prêts/indemnités signalés pour états complémentaires ; conformité exhaustive des modèles à faire valider par métier.",
+      "next_step": "Faire relire les dossiers représentatifs par une personne compétente, traiter ses réserves et développer les états spécifiques utiles à la copropriété.",
       "delivered_in_this_change": true,
       "source_text": "États financiers et annexes obligatoires : situation financière et trésorerie, compte de gestion général, compte de gestion pour opérations courantes, compte de gestion pour travaux et opérations exceptionnelles, état des dettes et créances, annexes 1 à 5 (comparaison budget/réalisé, état des travaux, etc.)."
     },
@@ -892,7 +896,7 @@
       "section": "4.5",
       "text": "Documents joints obligatoires : comptes, budget, devis, contrat-type de syndic, projet de contrat, etc., avec liste de contrôle selon les résolutions.",
       "status": "partiel",
-      "assessment": "Pièces versionnées selon modèle ; approbation des comptes avec cinq annexes, décomptes et consultation, exercice terminé, relecture et empreinte du dossier comptable figée. Modification après relecture et erreurs bloquent la convocation. Vérification humaine du contenu réel des PDF et des cas particuliers.",
+      "assessment": "Pièces versionnées par résolution, contrôle du contenu intact, comptes figés liés à une relecture annuelle actuelle ; PDF de convocation, pouvoir et correspondance avec rubriques et rappels complets du modèle. Checklist, rapport signé et relecture déclarée liés aux sources. La relecture métier réelle et les cas légaux particuliers restent nécessaires.",
       "evidence": [
         "backend/governance/templates.py",
         "backend/governance/workflow.py",
@@ -900,10 +904,14 @@
         "frontend/src/components/AssemblyWorkflow.tsx",
         "backend/finance/regulatory.py",
         "backend/finance/test_regulatory.py",
-        "frontend/src/components/RegulatoryAnnexes.tsx"
+        "frontend/src/components/RegulatoryAnnexes.tsx",
+        "backend/documents/review.py",
+        "backend/documents/pdf.py",
+        "backend/documents/test_review.py",
+        "docs/guides/VALIDATION-DOCUMENTS.md"
       ],
       "priority": "P0",
-      "next_step": "Pièces versionnées selon modèle ; approbation des comptes avec cinq annexes, décomptes et consultation, exercice terminé, relecture et empreinte du dossier comptable figée. Modification après relecture et erreurs bloquent la convocation. Vérification humaine du contenu réel des PDF et des cas particuliers.",
+      "next_step": "Obtenir une relecture métier réelle des modèles et dossiers, puis traiter les réserves ; maintenir les pièces selon chaque décision.",
       "delivered_in_this_change": true,
       "source_text": "Documents joints obligatoires : comptes, budget, devis, contrat-type de syndic, projet de contrat, etc., avec liste de contrôle selon les résolutions."
     },
@@ -1088,15 +1096,19 @@
       "section": "4.5",
       "text": "Génération du procès-verbal (modèle réglementaire), signature (physique ou électronique), registre des PV.",
       "status": "partiel",
-      "assessment": "PV avec votes, noms/voix, opposants/abstentionnistes et assimilés défaillants distincts, rappel article 42 alinéa 2, scans signés et registre. Feuille de présence avec réception des correspondances. Validation métier des modèles et signature qualifiée extérieure.",
+      "assessment": "PV issu des votes, noms/voix, opposants, abstentionnistes et assimilés défaillants distincts, rappel de recours ; PDF serveur du PV et de la présence avec texte long conservé. Rapport de relecture signé, checklist, historique et blocage de l’édition relue après changement. Scans signés et registre existants ; certification et signature qualifiée absentes.",
       "evidence": [
         "backend/governance/templates.py",
         "backend/governance/workflow.py",
         "backend/governance/test_workflow.py",
-        "frontend/src/components/AssemblyWorkflow.tsx"
+        "frontend/src/components/AssemblyWorkflow.tsx",
+        "backend/documents/review.py",
+        "backend/documents/pdf.py",
+        "backend/documents/test_review.py",
+        "docs/guides/VALIDATION-DOCUMENTS.md"
       ],
       "priority": "P0",
-      "next_step": "PV avec votes, noms/voix, opposants/abstentionnistes et assimilés défaillants distincts, rappel article 42 alinéa 2, scans signés et registre. Feuille de présence avec réception des correspondances. Validation métier des modèles et signature qualifiée extérieure.",
+      "next_step": "Faire examiner les modèles PV/présence par une personne compétente, traiter ses réserves ; choisir un prestataire si une signature connectée est nécessaire.",
       "delivered_in_this_change": true,
       "source_text": "Génération du procès-verbal (modèle réglementaire), signature (physique ou électronique), registre des PV."
     },
@@ -1732,15 +1744,18 @@
       "section": "4.12",
       "text": "Modèles de courriers et documents (mise en demeure, convocation, attestations).",
       "status": "partiel",
-      "assessment": "Courriels d’accès et brouillons de relance présents. Ajouter modèles paramétrables et documents officiels.",
+      "assessment": "Quatre modèles courants : information, devis, intervention et point amiable sur un solde ; préremplissage annuaire, texte éditable, aperçu, relecture et PDF privé versionné. Convocations et PV restent liés au parcours AG. Mises en demeure et attestations réglementaires non livrées.",
       "evidence": [
         "backend/operations/models.py",
         "backend/operations/views.py",
-        "backend/operations/tests.py"
+        "backend/operations/tests.py",
+        "backend/documents/templates.py",
+        "backend/documents/test_templates.py",
+        "frontend/src/components/DocumentTemplates.tsx"
       ],
       "priority": "P1",
-      "next_step": "Courriels d’accès et brouillons de relance présents. Ajouter modèles paramétrables et documents officiels.",
-      "delivered_in_this_change": false,
+      "next_step": "Compléter les modèles juridiques spécifiques après validation métier, puis les besoins de personnalisation et de brouillons persistants.",
+      "delivered_in_this_change": true,
       "source_text": "Modèles de courriers et documents (mise en demeure, convocation, attestations)."
     },
     {
@@ -1766,15 +1781,18 @@
       "section": "4.13",
       "text": "Espace copropriétaire : solde du compte, historique des appels et paiements, documents de l'AG, règlement, PV, contrats, carnet d'entretien, coordonnées du gestionnaire.",
       "status": "partiel",
-      "assessment": "Compte personnel, derniers mouvements, appels globaux et documents publiés présents. Ajouter historique personnel paginé, pièces liées aux appels et fiche gestionnaire complète.",
+      "assessment": "Compte personnel avec historique paginé sans limite aux 100 derniers mouvements, filtre de dates, soldes de période et exports privés PDF/CSV ; appels globaux et documents publiés présents. Pièces personnelles liées aux appels et fiche gestionnaire complète à compléter.",
       "evidence": [
         "backend/operations/models.py",
         "backend/operations/views.py",
-        "backend/operations/tests.py"
+        "backend/operations/tests.py",
+        "backend/operations/statements.py",
+        "backend/operations/test_statements.py",
+        "frontend/src/components/PersonalAccount.tsx"
       ],
       "priority": "P1",
-      "next_step": "Compte personnel, derniers mouvements, appels globaux et documents publiés présents. Ajouter historique personnel paginé, pièces liées aux appels et fiche gestionnaire complète.",
-      "delivered_in_this_change": false,
+      "next_step": "Relier les justificatifs et appels personnels, compléter la fiche gestionnaire et le carnet d’entretien.",
+      "delivered_in_this_change": true,
       "source_text": "Espace copropriétaire : solde du compte, historique des appels et paiements, documents de l'AG, règlement, PV, contrats, carnet d'entretien, coordonnées du gestionnaire."
     },
     {
@@ -2149,10 +2167,10 @@
       "section": "4.15",
       "text": "Aide intégrée : fiches pratiques, modèles de courriers, FAQ juridique, renvois vers des ressources d'information (par exemple associations de copropriétaires, ADIL).",
       "source_text": "Aide intégrée : fiches pratiques, modèles de courriers, FAQ juridique, renvois vers des ressources d'information (par exemple associations de copropriétaires, ADIL).",
-      "delivered_in_this_change": false,
+      "delivered_in_this_change": true,
       "status": "partiel",
-      "assessment": "Explications des catégories, aide du calculateur et guides du dépôt présents. Guide AG intégré avec six étapes, FAQ d’utilisation, lexique, mémo et impression. Les fiches juridiques, courriers et ressources contextualisées restent à compléter.",
-      "next_step": "Étendre l’aide intégrée aux autres parcours ; ajouter des fiches pratiques sourcées, modèles de courriers et ressources ADIL contextualisées.",
+      "assessment": "Aide des catégories et guide AG intégré. Quatre modèles courants à remplir avec aperçu et PDF privé sont disponibles. Fiches juridiques et ressources contextualisées restent à compléter.",
+      "next_step": "Étendre l’aide aux autres parcours et ajouter des fiches sourcées et ressources ADIL contextualisées.",
       "evidence": [
         "frontend/src/components/Navigation.tsx",
         "frontend/src/components/Assemblies.tsx",
@@ -2160,7 +2178,9 @@
         "backend/governance/calculations.py",
         "frontend/src/components/AssemblyGuide.tsx",
         "frontend/src/components/assembly-guide-content.ts",
-        "docs/guides/AG-PREMIERS-PAS.md"
+        "docs/guides/AG-PREMIERS-PAS.md",
+        "frontend/src/components/DocumentTemplates.tsx",
+        "docs/guides/PRIORITES-QUOTIDIEN.md"
       ],
       "priority": "P1"
     },
@@ -2666,7 +2686,7 @@
       "section": "7",
       "text": "Tests de pénétration, gestion des vulnérabilités, politique de mise à jour.",
       "status": "partiel",
-      "assessment": "221 tests fonctionnels et compilation passent. Pas de pentest, suivi de dépendances ou politique de mise à jour attestée.",
+      "assessment": "255 tests fonctionnels et compilation passent. Pas de pentest, suivi de dépendances ou politique de mise à jour attestée.",
       "evidence": [
         "backend/core/tests.py",
         "backend/finance/tests.py",
@@ -2675,7 +2695,7 @@
         "backend/operations/test_partners.py"
       ],
       "priority": "P0",
-      "next_step": "221 tests fonctionnels et compilation passent. Pas de pentest, suivi de dépendances ou politique de mise à jour attestée.",
+      "next_step": "255 tests fonctionnels et compilation passent. Pas de pentest, suivi de dépendances ou politique de mise à jour attestée.",
       "delivered_in_this_change": false,
       "source_text": "Tests de pénétration, gestion des vulnérabilités, politique de mise à jour."
     },
@@ -3845,5 +3865,12 @@
       "absent": 0
     },
     "caution": "La moitié attribuée à une exigence partielle est une convention, pas une mesure de son achèvement réel."
+  },
+  "document_review": {
+    "annex_model": "2026.10.2",
+    "pdf_model": "documents-2026.10.2",
+    "technical_scenarios": 16,
+    "human_review": "pending — relecture prévue par le syndic ou le conseil syndical ; aucune validation métier réelle obtenue",
+    "guide": "docs/guides/VALIDATION-DOCUMENTS.md"
   }
 }

@@ -641,6 +641,7 @@ def regularization_data(year, approved_on=None):
         Line.objects.filter(
             entry__year=year,
             account__code__startswith="7",
+            project__isnull=True,
             entry__reversal_of__isnull=True,
             entry__reversal__isnull=True,
         )
@@ -1044,14 +1045,16 @@ def finish_project(project, year, data, user):
         raise ValueError("Ventilez toutes les charges de travaux avant de terminer.")
     lines = []
     if prior_cost:
+        old_costs = (Line.objects.filter(project=project,entry__date__lt=year.starts_on,account__code__startswith='67')
+            .exclude(entry__kind__in=['carry','closing','project-complete'])
+            .values('account__code').annotate(d=Sum('debit'),c=Sum('credit')))
+        if sum((r['d']-r['c'] for r in old_costs),ZERO) != prior_cost:
+            raise ValueError('Ventilez les coûts repris du compte 120 par nature et par lot avant de terminer les travaux.')
+        lines.extend({'code':r['account__code'],'debit':max(r['d']-r['c'],ZERO),
+                      'credit':max(r['c']-r['d'],ZERO),'project':project}
+                     for r in old_costs if r['d']!=r['c'])
         lines.extend(
             [
-                {
-                    "code": "671",
-                    "debit": max(prior_cost, ZERO),
-                    "credit": max(-prior_cost, ZERO),
-                    "project": project,
-                },
                 {
                     "code": "120",
                     "credit": max(prior_cost, ZERO),
@@ -1061,12 +1064,17 @@ def finish_project(project, year, data, user):
             ]
         )
     if held:
+        fund_used = sum((l.debit-l.credit for l in source if l.account.code=='105'),ZERO)
+        advances_used = sum((l.debit-l.credit for l in source if l.account.code=='1032' and l.entry.kind=='advance-use'),ZERO)
+        if min(fund_used,advances_used,held-fund_used-advances_used)<0:
+            raise ValueError('Les financements des travaux ne concordent pas avec les fonds et avances affectés.')
         lines.extend(
             [
                 {"code": "102", "debit": held, "project": project},
-                {"code": "702", "credit": held, "project": project},
             ]
         )
+        lines.extend({'code':code,'credit':value,'project':project} for code,value in
+                     [('702',held-fund_used-advances_used),('705',fund_used),('703',advances_used)] if value)
     adjustment = ZERO
     for lot, owner in set(charges) | set(provisions):
         value = charges[(lot, owner)] - provisions[(lot, owner)]

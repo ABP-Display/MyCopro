@@ -33,7 +33,23 @@ trois catégories d’avances, la vente, les restitutions et l’affectation PPT
 Voir le [guide](DOCUMENTS-FONDS-AVANCES.md). Une validation métier des modèles reste
 nécessaire ; prêts/aides et situations exceptionnelles restent à compléter.
 
-## Prochain focus recommandé : guider l’année de gestion
+Le [parcours de validation des documents](VALIDATION-DOCUMENTS.md) ajoute les PDF
+de travail, les dossiers fictifs chiffrés, les contrôles des cas exceptionnels et
+l’enregistrement d’un rapport signé lié à la version des sources. Le volet
+technique est livré ; la relecture réelle par une personne compétente et les
+réserves qu’elle pourra émettre restent à traiter avant utilisation officielle.
+
+## Priorités quotidiennes confirmées le 20 octobre 2026
+
+L’annuaire, le portail privé, les documents AG/comptables, les factures communes,
+les outils et les modèles à remplir sont les six priorités d’usage. Les compléments
+livrés ajoutent l’historique personnel paginé, filtrable et exportable en PDF/CSV,
+ainsi que quatre modèles de courriers éditables avec aperçu et conservation privée.
+Voir le [guide quotidien](PRIORITES-QUOTIDIEN.md). Les modèles juridiques particuliers,
+pièces personnelles liées aux appels, imports de consommations, messagerie et
+signalements restent à compléter selon ces usages.
+
+## Autre focus recommandé : guider l’année de gestion
 
 Rendre le profil de l’immeuble et le calendrier des obligations compréhensibles,
 puis relier entretien, travaux, pièces et décisions. Maintenir en parallèle la
@@ -49,7 +65,7 @@ validation des modèles sur des dossiers représentatifs.
 | P1 | Guider l’année de gestion | Profil de l’immeuble, calendrier annuel des comptes/budget/AG, échéances contextualisées, carnet d’entretien et checklist avec sources et statut | 4.8.02 à 4.8.04, 4.8.07, 4.14, 4.15.02 |
 | P1 | Terminer travaux et sinistres | Relier devis, décision, commande, dépenses, chantier, réception, réserves, garanties et dossier d’assurance | 4.7, 4.8.01, 4.8.05, 4.10 |
 | P1 | Faciliter la reprise des données | Import contrôlé des lots/propriétaires/tantièmes, rapprochement des soldes, détection des doublons, aperçu avant import et rapport des anomalies | 4.1.07, 6.08 |
-| P1/P2 selon l’usage | Renforcer l’extranet | Signalements avec photos, demandes écrites des copropriétaires, suivi des réponses, recherche et historique personnel paginé | 4.5.03, 4.8.01, 4.12, 4.13, 6.06 |
+| P1/P2 selon l’usage | Renforcer l’extranet | Signalements avec photos, demandes écrites des copropriétaires, suivi des réponses, pièces personnelles liées aux appels et recherche ; historique personnel paginé et relevés PDF/CSV livrés | 4.5.03, 4.8.01, 4.12, 4.13, 6.06 |
 | P2 | Connecter les services utiles | Choisir les prestataires de recommandé/signature, puis connecter envoi et récupération des preuves ; étudier ensuite vote direct des membres et visio | 4.5.07, 4.5.12, 4.5.15, 6.02, 6.03 |
 | P2, avant une deuxième copropriété | Isoler les copropriétés | Rattacher toutes les données à un syndicat, filtrer chaque accès et tester l’absence de fuite entre deux copropriétés ; rendre le sélecteur réellement fonctionnel | Besoin multi-copropriété, 7.08 |
 

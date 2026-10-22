@@ -8,6 +8,7 @@ Django / Python et PostgreSQL.
 [Code source](https://github.com/abp-display/Copro) ·
 [Documentation](docs/README.md) ·
 [Guide de la première AG](docs/guides/AG-PREMIERS-PAS.md) ·
+[Guide des usages quotidiens](docs/guides/PRIORITES-QUOTIDIEN.md) ·
 [Prochains chantiers](docs/guides/PROCHAINS-CHANTIERS.md)
 
 ## Fonctionnalités disponibles
@@ -22,7 +23,9 @@ Django / Python et PostgreSQL.
 | Assemblées générales | Préparation, résolutions, convocations, présences, pouvoirs, correspondance, calculs et enregistrement des votes, PV, pièces signées, suivi des notifications, décisions et registre. |
 | Conseil syndical | Mandats datés, responsabilités et permissions ciblées, préparation des dépenses par le trésorier, avis motivés, contrôle avant règlement ou sélection d’un devis et rapports indépendants. |
 | Dossiers et suivi | Fournisseurs, contrats, attestations, dossiers travaux et sinistres, devis, relances préparées et annonces. |
-| Documents et extranet | Pièces versionnées, partage explicite, compte personnel du copropriétaire et consultation des informations publiées. |
+| Documents et extranet | Pièces versionnées, partage explicite, compte personnel avec historique paginé, filtres de dates et relevés PDF/CSV privés ; consultation des informations publiées. |
+| Modèles à remplir | Information, demande de devis, demande d’intervention et point amiable sur un solde ; annuaire, texte éditable, aperçu, relecture et création d’un PDF privé dans la bibliothèque. |
+| Outils | Calcul des majorités, répartition annuelle avec vues mensuelle/trimestrielle, chargement de tous les copropriétaires et simulation d’échéanciers au centime. |
 | Sauvegarde et reprise | Archive chiffrée regroupant PostgreSQL et toutes les pièces, restauration de contrôle isolée, comparaison des empreintes, rétention et reprise après interruption. |
 | Sécurité des comptes | Double authentification par application, codes de secours à usage unique, limitation des tentatives, règle obligatoire pour la gestion et récupération serveur tracée. |
 | Aide au quotidien | Menu regroupé par catégories, navigation repliable, guide AG en six étapes avec FAQ et lexique, analyses métriques locales et alertes sur l’accueil. |
@@ -44,6 +47,15 @@ Le dossier annuel présente cinq annexes avec comparatifs, soldes séparés par 
 travaux terminés/en cours et contrôles de concordance. Les provisions restent lisibles
 avant régularisation. Les modèles AG demandent les annexes et décomptes, avec relecture
 et empreinte du dossier ; une modification impose une nouvelle vérification avant convocation.
+
+Les PDF des annexes, décomptes, convocations, formulaires de correspondance,
+pouvoirs, présences et PV sont générés côté serveur. Le parcours de relecture
+conserve le relecteur, sa qualité, sa checklist, son rapport signé et l’empreinte
+des sources. Une édition relue exige une déclaration actuelle, sans erreur ;
+les modifications, refus, retraits et pièces altérées la bloquent. Les PDF de
+travail restent marqués « PROJET ». Voir le [guide de validation des documents](docs/guides/VALIDATION-DOCUMENTS.md).
+Les dossiers de référence sont fictifs ; aucune certification ni validation
+professionnelle réelle des modèles n’est annoncée.
 
 Dans **Charges & finances → Fonds & avances**, renseigner le profil, le budget,
 le PPT et les décisions pour activer les contrôles des nouveaux appels. Les avances
@@ -299,6 +311,12 @@ docs/           Présentation autonome, guides et cahier
 ```
 
 ### Vérifications avec Docker
+
+Un [scénario de démonstration](docs/guides/DEMONSTRATION.md) permet d’essayer cinq
+copropriétaires fictifs, six lots, les appels, versements mensuels/trimestriels,
+impayés, banques, travaux, clôture et AG. La commande `simulate_copro` affiche un
+aperçu par défaut ; l’import exige `--apply`, une sauvegarde préalable et une
+instance sans écritures. Les tests `core.test_demo` utilisent une base séparée.
 
 ```sh
 docker compose exec backend python manage.py test --noinput

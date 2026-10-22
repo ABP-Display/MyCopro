@@ -113,7 +113,7 @@ export function VoteCalculator({
           void calculate();
         }}
       >
-        <div className="calculator-toolbar">
+        <div className="calculator-toolbar vote-toolbar">
           <label>
             Majorité
             <select
@@ -128,6 +128,25 @@ export function VoteCalculator({
               ))}
             </select>
           </label>
+          <label className="vote-entry-mode">
+            Saisie des résultats
+            <select
+              disabled={busy || form.mode !== "first"}
+              value={entryMode}
+              onChange={(e) => {
+                setEntryMode(e.target.value);
+                setResult(null);
+                setError("");
+              }}
+            >
+              <option value="roster">
+                Par copropriétaire — présences et votes
+              </option>
+              <option value="free">Totaux en saisie libre</option>
+            </select>
+          </label>
+        </div>
+        <div className="vote-toolbar-actions">
           <span className="subtle-badge">
             {form.mode === "first"
               ? "Premier vote"
@@ -160,23 +179,6 @@ export function VoteCalculator({
             </button>
           )}
         </div>
-        <label className="vote-entry-mode">
-          Saisie des résultats
-          <select
-            disabled={busy || form.mode !== "first"}
-            value={entryMode}
-            onChange={(e) => {
-              setEntryMode(e.target.value);
-              setResult(null);
-              setError("");
-            }}
-          >
-            <option value="roster">
-              Par copropriétaire — présences et votes
-            </option>
-            <option value="free">Totaux en saisie libre</option>
-          </select>
-        </label>
         {entryMode === "roster" ? (
           <RosterEditor
             voting
@@ -367,7 +369,7 @@ export function Tools({ section }: { section: string }) {
         <Icon name="calculator" />
         <p>
           {section === "split"
-            ? "Répartissez un montant selon des poids ou tantièmes. L’arrondi conserve exactement le total au centime ; les parts nulles restent à zéro."
+            ? "Répartissez un montant annuel selon des poids ou tantièmes, avec une vue par mois et par trimestre. L’arrondi conserve exactement le total annuel au centime ; les parts nulles restent à zéro."
             : "Divisez un montant en échéances égales. Les centimes restants sont placés sur les premières échéances."}{" "}
           Ce calcul ne crée aucune opération comptable.
         </p>
@@ -385,7 +387,7 @@ export function Tools({ section }: { section: string }) {
       >
         <div className="calculator-toolbar">
           <label>
-            Montant total (€)
+            {section === "split" ? "Montant annuel total (€)" : "Montant total (€)"}
             <input
               required
               type="number"
@@ -417,7 +419,35 @@ export function Tools({ section }: { section: string }) {
         </div>
         {section === "split" && (
           <div className="split-rows">
-            <label>Reprendre un copropriétaire<select value="" onChange={e=>{const owner=directory.find(o=>String(o.owner_id)===e.target.value);if(owner){setRows([...rows,{label:owner.name,weight:owner.shares}]);changed();}}}><option value="">Choisir dans l’annuaire…</option>{directory.map(o=><option key={o.owner_id} value={o.owner_id}>{o.name} — {o.shares} tantièmes</option>)}</select></label>
+            <div className="roster-toolbar">
+              <button
+                type="button"
+                className="button secondary"
+                disabled={busy || !directory.length || directory.length > 200}
+                aria-describedby="split-directory-hint"
+                onClick={() => {
+                  setRows(directory.map((owner) => ({
+                    label: owner.name,
+                    weight: owner.shares,
+                  })));
+                  changed();
+                }}
+              >
+                <Icon name="people" size={16} />
+                Charger tous les copropriétaires
+              </button>
+              <label>
+                Reprendre un copropriétaire
+                <select value="" onChange={e=>{const owner=directory.find(o=>String(o.owner_id)===e.target.value);if(owner){setRows([...rows,{label:owner.name,weight:owner.shares}]);changed();}}}>
+                  <option value="">Choisir dans l’annuaire…</option>
+                  {directory.map(o=><option key={o.owner_id} value={o.owner_id}>{o.name} — {o.shares} tantièmes</option>)}
+                </select>
+              </label>
+            </div>
+            <p id="split-directory-hint" className="split-directory-hint">
+              Le chargement remplace les parts affichées par les copropriétaires
+              de l’annuaire, avec les tantièmes de leurs lots regroupés par personne.
+            </p>
             {rows.map((row, index) => (
               <div className="split-row" key={index}>
                 <label>
@@ -509,7 +539,11 @@ export function Tools({ section }: { section: string }) {
                 <tr>
                   <th>{section === "split" ? "Part" : "Échéance"}</th>
                   {section === "split" && <th>Poids</th>}
-                  <th>Montant</th>
+                  <th className="tool-money">{section === "split" ? "Par an" : "Montant"}</th>
+                  {section === "split" && <>
+                    <th className="tool-money">Par trimestre ≈</th>
+                    <th className="tool-money">Par mois ≈</th>
+                  </>}
                 </tr>
               </thead>
               <tbody>
@@ -517,12 +551,34 @@ export function Tools({ section }: { section: string }) {
                   <tr key={index}>
                     <td>{row.label || `Échéance ${row.number}`}</td>
                     {section === "split" && <td>{row.weight}</td>}
-                    <td>{euro(row.amount)}</td>
+                    <td className="tool-money">{euro(row.amount)}</td>
+                    {section === "split" && <>
+                      <td className="tool-money">{euro(Number(row.amount) / 4)}</td>
+                      <td className="tool-money">{euro(Number(row.amount) / 12)}</td>
+                    </>}
                   </tr>
                 ))}
               </tbody>
+              {section === "split" && (
+                <tfoot>
+                  <tr>
+                    <th scope="row" colSpan={2}>Total annuel réparti</th>
+                    <td className="tool-money">{euro(result.total)}</td>
+                    <td className="tool-money">{euro(Number(result.total) / 4)}</td>
+                    <td className="tool-money">{euro(Number(result.total) / 12)}</td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
+          {section === "split" && (
+            <p className="tool-period-note">
+              Équivalents sur 4 trimestres ou 12 mois, arrondis au centime :
+              leur somme peut présenter un écart d’arrondi. Le montant annuel
+              fait référence. Utilisez « Simuler un échéancier » pour répartir
+              exactement les centimes entre les échéances.
+            </p>
+          )}
           <div className="tool-total">
             Total conservé : <strong>{euro(result.total)}</strong>
           </div>

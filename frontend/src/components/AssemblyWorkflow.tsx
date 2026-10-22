@@ -4,6 +4,7 @@ import type { ToolData as Row } from "./Tools";
 import { majorityLabels } from "./Tools";
 import { Icon } from "./ui";
 import "./assembly-workflow.css";
+import { DocumentValidation } from "./DocumentValidation";
 
 const phases: Record<string, string> = {
   draft: "Préparation",
@@ -350,6 +351,7 @@ export function AssemblyWorkflow({
           </section>
           {packet && (
             <PrintDocuments
+              meetingId={meeting.id}
               packet={packet}
               minutes={data.minutes}
               participants={data.participants}
@@ -371,6 +373,7 @@ export function AssemblyWorkflow({
             onSave={(participants) => act("participants", { participants })}
           />
           <PrintDocuments
+            meetingId={meeting.id}
             packet={data.packet}
             minutes={data.minutes}
             participants={data.participants}
@@ -578,6 +581,7 @@ export function AssemblyWorkflow({
           ) : (
             <>
               <PrintDocuments
+                meetingId={meeting.id}
                 packet={data.packet}
                 minutes={data.minutes}
                 participants={data.participants}
@@ -1295,6 +1299,8 @@ function Preparation({
             ...config,
             organizer: body.organizer,
             return_address: body.return_address,
+            building_address: body.building_address,
+            return_email: body.return_email,
             consultation: body.consultation,
             notice_days: Number(body.notice_days),
             fiscal_year: body.fiscal_year || null,
@@ -1342,6 +1348,13 @@ function Preparation({
             maxLength={500}
             defaultValue={config.return_address || ""}
           />
+        </label>
+        <label>
+          Adresse du ou des immeubles concernés
+          <textarea name="building_address" maxLength={1000} defaultValue={config.building_address||""}/>
+        </label>
+        <label>Courriel de retour des votes
+          <input name="return_email" type="email" maxLength={254} defaultValue={config.return_email||""}/>
         </label>
         <label>
           Consultation des pièces justificatives : lieu, dates et horaires
@@ -1789,6 +1802,7 @@ function Participants({
 }
 
 function PrintDocuments({
+  meetingId,
   packet,
   minutes,
   participants,
@@ -1796,6 +1810,7 @@ function PrintDocuments({
   onView,
   fixed = false,
 }: {
+  meetingId: number;
   packet: Row;
   minutes: Row;
   participants: Row[];
@@ -1814,7 +1829,7 @@ function PrintDocuments({
           </p>
         </div>
         <button className="button secondary" onClick={() => window.print()}>
-          Imprimer ce document
+          Imprimer cet aperçu de travail
         </button>
       </div>
       {!fixed && (
@@ -1836,7 +1851,9 @@ function PrintDocuments({
           ))}
         </div>
       )}
+      <DocumentValidation key={`${meetingId}:${view==="minutes"||view==="attendance"?"minutes":"assembly"}`} kind={view==="minutes"||view==="attendance"?"minutes":"assembly"} id={meetingId} document={view} revision={JSON.stringify({packet,minutes,participants})}/>
       <article className="ag-print-document">
+        <p><strong>PROJET — aperçu de travail. Pour l’édition relue, utilisez le téléchargement PDF ci-dessus.</strong></p>
         <p className="eyebrow">{packet.organizer}</p>
         <h2>
           {

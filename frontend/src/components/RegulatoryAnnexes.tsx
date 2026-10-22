@@ -1,7 +1,8 @@
 import "./regulatory.css";
 type Row = Record<string, any>;
 const labels:Record<string,string> = {group:"Rubrique",code:"Compte",label:"Libellé",third_party:"Tiers",previous_debit:"N−1 débiteur",previous_credit:"N−1 créditeur",debit:"N débiteur",credit:"N créditeur",activity:"Nature",side:"Sens",key:"Clé",actual_previous:"Réalisé N−1",budget_current:"Budget N",actual_current:"Réalisé N",budget_next:"Budget N+1",budget_following:"Budget N+2",project:"Opération",voted_on:"Date du vote",voted:"Travaux votés (A)",expenses:"Travaux réalisés (C)",paid:"Travaux payés (B)",funding:"Appels / affectations (D)",subsidies:"Subventions inscrites",waiting:"Solde en attente",receivable:"Subventions à recevoir (F)",completed_on:"Terminée le"};
-const moneyKeys = new Set(["previous_debit","previous_credit","debit","credit","actual_previous","budget_current","actual_current","budget_next","budget_following","voted","expenses","paid","funding","subsidies","waiting","receivable"]);
+Object.assign(labels,{assigned_products:"Produits affectés",net_expenses:"Charges nettes",balance:"Solde avant répartition"});
+const moneyKeys = new Set(["assigned_products","net_expenses","balance","previous_debit","previous_credit","debit","credit","actual_previous","budget_current","actual_current","budget_next","budget_following","voted","expenses","paid","funding","subsidies","waiting","receivable"]);
 const euro = (v:string) => new Intl.NumberFormat("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(v));
 export function RegulatoryAnnexes({pack}:{pack:Row}) {
   return <div className="regulatory-pack"><section className="panel regulatory-checks"><h2>{pack.organization} · Dossier annuel {pack.year}</h2><p>{pack.address} · {pack.period.start} → {pack.period.end} · montants en euros</p><p>Après répartition {pack.after_allocation==="posted"?"comptabilisée":"proposée, avant approbation"} · modèle {pack.version}</p>

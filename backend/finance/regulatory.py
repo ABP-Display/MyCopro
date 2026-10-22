@@ -9,7 +9,9 @@ from django.db.models import Q
 from .models import Line, FiscalYear, Budget, FinanceProject, AnnualSettlement, Organization, ExpensePayment
 
 ZERO = Decimal('0')
-SOURCE = 'https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000258200/'
+SOURCE = 'https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006051416/'
+MODEL_VERSION = '2026.10.2'
+WORK_PRODUCTS = {'702','703','704','705','706','712','718','780'}
 
 
 def m(value):
@@ -22,21 +24,39 @@ def project_states(year):
         if p.decided_on and p.decided_on > year.ends_on:
             continue
         lines = list(Line.objects.filter(project=p,entry__date__lte=year.ends_on)
-            .exclude(entry__kind__in=['carry','closing']).select_related('account','entry'))
+            .exclude(entry__kind__in=['carry','closing']).select_related('account','entry','entry__reversal_of').prefetch_related('entry__lines__account'))
         # Include inverse entries: their accounting date determines the period of correction.
         actual = [l for l in lines if l.account.code.startswith('67') and l.entry.kind!='project-complete']
         provisions = [l for l in lines if l.account.code=='102' and l.entry.kind!='project-complete']
         received = [l for l in lines if l.account.code.startswith('13')]
         receivable = [l for l in lines if l.account.code.startswith('441')]
-        cash = [l for l in lines if l.account.code.startswith(('512','514','531')) and l.credit]
+        cash = [l for l in lines if l.account.code.startswith(('512','514','531'))
+                and any(counter.account.code.startswith(('40','67')) for counter in l.entry.lines.all())]
         amount = lambda items, sign=1: sum(((l.debit-l.credit)*sign for l in items),ZERO)
         costs, funding = amount(actual), amount(provisions,-1)
+        expenses_by_code = defaultdict(lambda: ZERO)
+        for line in actual:
+            expenses_by_code[line.account.code] += line.debit-line.credit
+        fund_used = sum((l.debit-l.credit for l in lines if l.account.code=='105'),ZERO)
+        advance_used = sum((l.debit-l.credit for l in lines if l.account.code=='1032' and l.entry.kind=='advance-use'),ZERO)
+        products_by_code = defaultdict(lambda: ZERO)
+        products_by_code['702'] = funding-fund_used-advance_used
+        products_by_code['705'] = fund_used
+        products_by_code['703'] = advance_used
+        for line in lines:
+            if line.account.code.startswith('7') and line.entry.kind!='project-complete':
+                products_by_code[line.account.code] += line.credit-line.debit
+        assigned_products = sum((v for code,v in products_by_code.items() if code not in ('702','703','705','706')),ZERO)
         row = {'id':p.pk,'project':p.name,'key':p.key.name,'decision':p.decision,
                'voted_on':str(p.decided_on or ''),'voted':m(p.budget),'expenses':m(costs),
                'paid':m(sum((pay.amount for pay in ExpensePayment.objects.filter(expense__project=p,entry__date__lte=year.ends_on)
-                    .exclude(entry__reversal__date__lte=year.ends_on)),ZERO)+sum((l.credit-l.debit for l in cash if not hasattr(l.entry,'expense_payment')),ZERO)),
+                    .exclude(entry__reversal__date__lte=year.ends_on)),ZERO)+sum((l.credit-l.debit for l in cash if not hasattr(l.entry,'expense_payment') and not (l.entry.reversal_of_id and hasattr(l.entry.reversal_of,'expense_payment'))),ZERO)),
                'funding':m(funding),'subsidies':m(amount(received,-1)),
-               'receivable':m(amount(receivable)), 'waiting':m(funding+amount(received,-1)-costs),
+               'assigned_products':m(assigned_products),'net_expenses':m(costs-assigned_products),
+               'balance':m(funding+assigned_products-costs),
+               'expense_details':{k:m(v) for k,v in expenses_by_code.items()},
+               'product_details':{k:m(v) for k,v in products_by_code.items()},
+               'receivable':m(amount(receivable)), 'waiting':m(funding+amount(received,-1)+assigned_products-costs),
                'completed_on':str(p.completed_on or ''),
                'details': [{'date':str(l.entry.date),'number':l.entry.number,'label':l.entry.label,
                             'code':l.account.code,'debit':m(l.debit),'credit':m(l.credit)} for l in lines]}
@@ -71,7 +91,14 @@ def financial_state(year, reg, pending):
     # these in the pending-operation balance (12) for the annual presentation.
     for line in query.filter(project_id__in=pending_ids).filter(Q(account__code__in=['102','120']) | Q(account__code__startswith='13')):
         balances[(line.account.code,line.owner_id,line.supplier_id)] -= line.debit-line.credit
-    waiting = sum((Decimal(r['waiting']) for r in pending),ZERO)
+    # Calculate the presentation balance independently from the year's ledger,
+    # including carried balances, rather than copying annex 5's lifetime total.
+    waiting = ZERO
+    for line in query.filter(project_id__in=pending_ids):
+        if line.account.code in ('102','120') or line.account.code.startswith(('13','7')):
+            waiting += line.credit-line.debit
+        elif line.account.code.startswith('67'):
+            waiting -= line.debit-line.credit
     if waiting:
         balances[('12',None,None)] -= waiting
         labels[('12',None,None)] = 'Solde en attente sur travaux (annexe 5)'
@@ -108,13 +135,13 @@ def build(year, reg):
     now = {r['identity']:r for r in state}
     state = [{**(now.get(key) or old[key]),'debit':now.get(key,{}).get('debit','0.00'),
               'credit':now.get(key,{}).get('credit','0.00'),
-              'previous_debit':old.get(key,{}).get('debit') if previous else None,
-              'previous_credit':old.get(key,{}).get('credit') if previous else None} for key in sorted(set(old)|set(now))]
+              'previous_debit':old.get(key,{}).get('debit','0.00') if previous else None,
+              'previous_credit':old.get(key,{}).get('credit','0.00') if previous else None} for key in sorted(set(old)|set(now))]
     def current(selected):
         result = defaultdict(lambda:ZERO)
         if selected:
             for l in Line.objects.filter(entry__year=selected).exclude(entry__kind__in=['closing','regularization']).select_related('account'):
-                if l.account.code.startswith(('6','7')) and not l.account.code.startswith('67') and l.account.code not in ('702','706'):
+                if not l.project_id and l.account.code.startswith(('6','7')) and not l.account.code.startswith('67') and l.account.code not in WORK_PRODUCTS:
                     result[(l.account.code,l.key_id)] += (l.debit-l.credit)*(1 if l.account.code.startswith('6') else -1)
         return result
     def budgets(selected):
@@ -126,7 +153,8 @@ def build(year, reg):
                 else: centres[key] += b.amount
         return {key:specific.get(key,centres.get(key)) for key in set(specific)|set(centres)}
     from .models import Account, ChargeKey
-    names = dict(Account.objects.values_list('code','name'))
+    from .services import CHART
+    names = {**CHART,**dict(Account.objects.values_list('code','name'))}
     keys = dict(ChargeKey.objects.values_list('id','name'))
     actual, prior, planned = current(year),current(previous),budgets(year)
     future = [budgets(following[i] if len(following)>i else None) for i in range(2)]
@@ -148,17 +176,24 @@ def build(year, reg):
         for k in ['actual_previous','budget_current','actual_current','budget_next','budget_following']:
             if r[k] is not None: g[k] = m(Decimal(g[k] or '0')+Decimal(r[k]))
     expenses = sum((Decimal(r['expenses']) for r in completed),ZERO)
-    products = sum((Decimal(r['funding'])+Decimal(r['subsidies']) for r in completed),ZERO)
     annex2 = [dict(r,activity='Opérations courantes') for r in general.values()]
-    for code,label,value in [('671','Travaux et opérations exceptionnelles terminés',expenses),('702','Financement des opérations terminées',products)]:
-        annex2.append({'code':code,'label':label,'side':'Charges' if code=='671' else 'Produits','activity':'Travaux terminés','actual_current':m(value),
-                       'actual_previous':None,'budget_current':None,'budget_next':None,'budget_following':None})
+    previous_completed = project_states(previous)[0] if previous else []
+    exceptional, old_exceptional = defaultdict(lambda:ZERO),defaultdict(lambda:ZERO)
+    for projects, target in [(completed,exceptional),(previous_completed,old_exceptional)]:
+        for project in projects:
+            for field in ['expense_details','product_details']:
+                for code,value in project[field].items(): target[code] += Decimal(value)
+    for code in sorted(set(exceptional)|set(old_exceptional)|{'671','702','703','705'}):
+        annex2.append({'code':code,'label':names.get(code,code),'side':'Charges' if code.startswith('6') else 'Produits',
+            'activity':'Travaux terminés','actual_current':m(exceptional[code]),
+            'actual_previous':m(old_exceptional[code]) if previous else None,'budget_current':None,'budget_next':None,'budget_following':None})
     errors = list(reg.get('errors',[]))
     warnings = []
     totals = {k:sum((Decimal(r[k]) for r in state),ZERO) for k in ['debit','credit']}
     delta = totals['debit']-totals['credit']
     checks = [{'label':'Annexe 1 : équilibre après répartition','left':m(totals['debit']),'right':m(totals['credit']),'ok':delta==0},
-              {'label':'Annexes 2 et 4 : charges des opérations terminées','left':m(expenses),'right':m(sum((Decimal(r['expenses']) for r in completed),ZERO)),'ok':True},
+              {'label':'Annexes 2 et 4 : charges des opérations terminées','left':m(sum((Decimal(r['actual_current']) for r in annex2 if r['activity']=='Travaux terminés' and r['side']=='Charges'),ZERO)),
+               'right':m(sum((Decimal(r['expenses']) for r in completed),ZERO)),'ok':True},
               {'label':'Annexes 1 et 5 : solde en attente des travaux','left':m(sum((Decimal(r['credit'])-Decimal(r['debit']) for r in state if r['code']=='12'),ZERO)),
                'right':m(sum((Decimal(r['waiting']) for r in pending),ZERO)),'ok':True}]
     ledger_works = Line.objects.filter(entry__year=year,account__code__startswith='67').exclude(entry__kind='closing')
@@ -178,14 +213,34 @@ def build(year, reg):
     if any(r['key']=='Non ventilé' and Decimal(r['actual_current']) for r in rows): errors.append('Des opérations courantes ne sont pas ventilées par clé.')
     for p in completed+pending:
         if not p['voted_on']: errors.append('Travaux « '+p['project']+' » : date de la décision manquante.')
-    if Line.objects.filter(entry__year=year,account__code__in=['1031','1032','1033'],lot__isnull=True).exists():
+    if Line.objects.filter(entry__year=year,account__code__in=['1031','1032','1033']).filter(Q(lot__isnull=True)|Q(owner__isnull=True)).exists():
         errors.append('Des avances ne sont pas ventilées par lot et titulaire.')
+    if previous and not previous.closed and Line.objects.filter(entry__year=previous).exists():
+        warnings.append('L’exercice précédent n’est pas clôturé : vérifier son approbation et ses reports avant utilisation officielle du comparatif.')
+    if any(Decimal(r['waiting']) < 0 for r in pending):
+        warnings.append('Des travaux présentent un solde en attente débiteur : il reste des dépenses à financer ; conserver le signe négatif.')
+    if any(Decimal(r['paid']) > Decimal(r['expenses']) for r in completed+pending):
+        errors.append('Des règlements de travaux dépassent les dépenses enregistrées : vérifier les acomptes et avoirs avant validation.')
+    if Line.objects.filter(entry__year=year,account__code__in=WORK_PRODUCTS,project__isnull=True).exclude(entry__kind='closing').exists():
+        errors.append('Des produits exceptionnels ne sont pas rattachés à leur opération de travaux.')
+    if Line.objects.filter(entry__year=year,account__code__in=['106','674','706']).exclude(entry__kind='closing').exists():
+        errors.append('Délégation de pouvoirs au conseil : vérifier l’opération, ses engagements et son compte rendu dans un état complémentaire.')
+    if Line.objects.filter(entry__year=year).filter(Q(account__code__startswith='66')|Q(account__code__startswith='68')).exists():
+        errors.append('Charges financières ou dépréciations : vérifier leur ventilation et les états spécifiques avant validation de ce modèle.')
+    budget_groups = defaultdict(set)
+    for item in Budget.objects.filter(year=year): budget_groups[item.account_id].add(item.key_id)
+    if any(None in keys and len(keys)>1 for keys in budget_groups.values()):
+        errors.append('Un même compte possède un budget global et des budgets par clé : préciser le niveau retenu avant validation, sans double comptage.')
     if Line.objects.filter(entry__year=year,account__code__startswith='16').exists():
         errors.append('Emprunt collectif présent : compléter et faire valider son échéancier et ses états spécifiques avant utilisation de ce modèle en AG.')
+    unsupported=[r['code'] for r in state if not r['code'].startswith(('102','1031','1032','1033','105','106','12','131','16','40','42','43','44','45','46','47','48','49','50','51','53'))]
+    if unsupported:errors.append('Comptes sans rubrique dans ce modèle annuel : '+', '.join(sorted(set(unsupported)))+'. Préparer leur état complémentaire avant validation.')
+    if Line.objects.filter(entry__year=year,account__code__startswith='13',project__isnull=True).exists():
+        errors.append('Subvention sans opération identifiée : rapprocher la notification et son échéancier d’imputation avant validation.')
     if Line.objects.filter(entry__date__lte=year.ends_on,project_id__in=[r['id'] for r in completed+pending]).filter(Q(account__code__startswith='13')|Q(account__code__in=['711','712','713'])).exists():
         errors.append('Une opération comporte une aide, un emprunt ou une indemnité : rapprocher ses engagements, versements et imputations dans un état complémentaire avant utilisation en AG.')
     org,_ = Organization.objects.get_or_create(pk=1)
-    pack = {'version':'2026.10','organization':org.name,'address':org.address,'year':year.name,
+    pack = {'version':MODEL_VERSION,'organization':org.name,'address':org.address,'year':year.name,
         'period':{'start':str(year.starts_on),'end':str(year.ends_on)},
         'comparison':{'previous':previous.name if previous else None,'next':following[0].name if following else None,'following':following[1].name if len(following)>1 else None},
         'after_allocation':'proposed' if simulated else 'posted','checks':checks,'errors':list(dict.fromkeys(errors)),'warnings':warnings,
@@ -197,7 +252,10 @@ def build(year, reg):
             {'number':1,'title':'État financier après répartition','columns':['group','code','label','third_party','previous_debit','previous_credit','debit','credit'],'rows':state},
             {'number':2,'title':'Compte de gestion général','columns':['activity','side','code','label','actual_previous','budget_current','actual_current','budget_next','budget_following'],'rows':annex2},
             {'number':3,'title':'Opérations courantes par clé de répartition','columns':['key','side','code','label','actual_previous','budget_current','actual_current','budget_next','budget_following'],'rows':rows},
-            {'number':4,'title':'Travaux et opérations exceptionnelles terminés','columns':['project','key','voted_on','voted','expenses','funding','subsidies','completed_on'],'rows':completed},
+            {'number':4,'title':'Travaux et opérations exceptionnelles terminés','columns':['project','key','voted_on','voted','expenses','assigned_products','net_expenses','funding','balance','completed_on'],'rows':completed},
             {'number':5,'title':'Travaux et opérations exceptionnelles non terminés','columns':['project','key','voted_on','voted','paid','expenses','funding','subsidies','waiting','receivable'],'rows':pending}]}
+    pack['source_ledger_hash'] = digest(list(Line.objects.filter(entry__year=year).exclude(entry__kind='closing').order_by('id')
+        .values('id','entry_id','entry__date','entry__journal','entry__label','entry__reference','account__code',
+                'owner_id','supplier_id','lot_id','key_id','project_id','debit','credit')))
     pack['source_hash'] = digest(pack)
     return pack
