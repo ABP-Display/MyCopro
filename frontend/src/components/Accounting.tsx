@@ -757,7 +757,7 @@ function ResourceEditor({
   );
 }
 
-export function AccountingReports({ section }: { section?: string }) {
+export function AccountingReports({ section, simple=false }: { section?: string; simple?:boolean }) {
   const [years, setYears] = useState<Row[]>([]);
   const [centers, setCenters] = useState<Row[]>([]);
   const [journals, setJournals] = useState<Row[]>([]);
@@ -797,11 +797,20 @@ export function AccountingReports({ section }: { section?: string }) {
         setFilters((f) => ({
           ...f,
           year: String(y.items[0]?.id || ""),
-          prefix: s.items[0]?.report_prefix || "",
+          prefix: simple ? "" : s.items[0]?.report_prefix || "",
         }));
       })
       .catch((e) => setError(e.message));
   }, []);
+  const periodOptions:{value:string;label:string;start:string;end:string}[]=[];
+  const selectedYear=years.find(y=>String(y.id)===filters.year);
+  if(selectedYear){
+    const first=new Date(selectedYear.starts_on+"T00:00:00Z"),last=new Date(selectedYear.ends_on+"T00:00:00Z"),iso=(d:Date)=>d.toISOString().slice(0,10);
+    for(const interval of [1,3]){let cursor=new Date(Date.UTC(first.getUTCFullYear(),Math.floor(first.getUTCMonth()/interval)*interval,1));for(let i=0;cursor<=last&&i<24;i++){
+      const end=new Date(Date.UTC(cursor.getUTCFullYear(),cursor.getUTCMonth()+interval,0)),a=iso(cursor)<selectedYear.starts_on?selectedYear.starts_on:iso(cursor),b=iso(end)>selectedYear.ends_on?selectedYear.ends_on:iso(end);
+      periodOptions.push({value:`${interval}-${iso(cursor)}`,label:interval===1?cursor.toLocaleDateString("fr-FR",{month:"long",year:"numeric",timeZone:"UTC"}):`Trimestre ${Math.floor(cursor.getUTCMonth()/3)+1} — ${cursor.getUTCFullYear()}`,start:a,end:b});cursor=new Date(Date.UTC(cursor.getUTCFullYear(),cursor.getUTCMonth()+interval,1));
+    }}
+  }
   const query = new URLSearchParams(
     Object.fromEntries(
       Object.entries(filters)
@@ -948,6 +957,7 @@ export function AccountingReports({ section }: { section?: string }) {
                 ))}
               </select>
             </label>
+            {simple&&<label>Période rapide<select value={!filters.start&&!filters.end?"year":periodOptions.find(p=>p.start===filters.start&&p.end===filters.end)?.value||"custom"} onChange={e=>{const p=periodOptions.find(p=>p.value===e.target.value);if(p)setFilters({...filters,start:p.start,end:p.end});else if(e.target.value==="year")setFilters({...filters,start:"",end:""});}}><option value="year">Exercice entier</option>{periodOptions.map(p=><option key={p.value} value={p.value}>{p.label}</option>)}<option value="custom">Dates personnalisées</option></select></label>}
             <label>
               Début
               <input
@@ -969,6 +979,7 @@ export function AccountingReports({ section }: { section?: string }) {
                 }
               />
             </label>
+            <details className="report-extra" open={simple?undefined:true}><summary>Filtres détaillés (facultatif)</summary><div className="report-extra-fields">
             <label>
               Préfixe du compte
               <input
@@ -1070,6 +1081,7 @@ export function AccountingReports({ section }: { section?: string }) {
                 Comptes non soldés uniquement
               </label>
             )}
+            </div></details>
             <button className="button primary" disabled={busy}>
               {busy ? "Calcul…" : "Calculer le rapport"}
             </button>

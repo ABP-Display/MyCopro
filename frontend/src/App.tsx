@@ -30,6 +30,7 @@ import { AccountingCycle } from "./components/AccountingCycle";
 import { Funding } from "./components/Funding";
 import { Documents } from "./components/Documents";
 import { Assemblies } from "./components/Assemblies";
+import { DailyWorkspace, GuidedAssembly } from "./components/DailyWorkspace";
 import { Tools } from "./components/Tools";
 import { CategoryOverview, categoryHelp } from "./components/CategoryOverview";
 const AssemblyGuide = lazy(() =>
@@ -302,6 +303,12 @@ function Application() {
               isAdmin={!!user.is_admin}
               onNavigate={(child) => navigate(page, child)}
             />
+          ) : page === "accounting" && ["history","expenses","reports","advanced"].includes(section) ? (
+            <DailyWorkspace key={section} section={section} isAdmin={!!user.is_admin} />
+          ) : page === "finance" && section === "payments" ? (
+            <DailyWorkspace section="payments" isAdmin={!!user.is_admin} />
+          ) : page === "assemblies" && ["prepare","run","follow"].includes(section) ? (
+            <GuidedAssembly section={section} onGuide={()=>navigate("assemblies","guide")} />
           ) : ["operations", "partners", "communication"].includes(page) ? (
             <Operations section={section} />
           ) : page === "finance" && section === "reminders" ? (

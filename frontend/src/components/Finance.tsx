@@ -31,9 +31,13 @@ type Tab = keyof typeof tabs;
 export function Finance({
   manager,
   section,
+  compact=false,
+  onRecorded,
 }: {
   manager: boolean;
   section?: string;
+  compact?: boolean;
+  onRecorded?:()=>void;
 }) {
   const [localTab, setTab] = useState<Tab>(manager ? "keys" : "reports");
   const tab = (section || localTab) as Tab;
@@ -574,7 +578,7 @@ export function Finance({
           {notice}
         </p>
       )}
-      {tab === "treasury" ? (
+      {tab === "treasury" ? compact ? null : (
         <>
           <div className="stats-grid">
             {(data.treasury || [])
@@ -878,6 +882,7 @@ export function Finance({
           onClose={() => setForm(null)}
           onSaved={async () => {
             setForm(null);
+            onRecorded?.();
             setNotice("Opération enregistrée.");
             await load();
           }}
@@ -955,6 +960,7 @@ function FinanceForm({
   const dialog = useRef<HTMLDialogElement>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [callKind,setCallKind]=useState(String(defaults.kind||"current"));
   const [supplierRecord, setSupplierRecord] = useState("");
   const [operationId] = useState(newOperationId);
   const [lines, setLines] = useState<Row[]>([
@@ -969,6 +975,7 @@ function FinanceForm({
     setBusy(true);
     setError("");
     const data: Row = {
+      ...(resource==="calls"?{advance_type:"reserve"}:{}),
       ...defaults,
       ...Object.fromEntries(new FormData(event.currentTarget)),
       request_id: defaults.request_id || operationId,
@@ -1014,8 +1021,8 @@ function FinanceForm({
               {error}
             </div>
           )}
-          {fields.some(f=>f.name==="advance_type")&&<p className="muted">Pour un fonds travaux ou une avance, renseignez d’abord les décisions et justificatifs dans Charges & finances → Fonds & avances. Sans paramétrage annuel, les minima et plafonds ne sont pas contrôlés. La catégorie 103 est ignorée pour les autres natures d’appel.</p>}
-          {fields.map((f) => (
+          {fields.some(f=>f.name==="advance_type")&&<p className="muted">Pour un fonds travaux ou une avance, renseignez d’abord les décisions et justificatifs dans Charges & finances → Fonds travaux & appels exceptionnels. Sans paramétrage annuel, les minima et plafonds ne sont pas contrôlés. La catégorie 103 est ignorée pour les autres natures d’appel.</p>}
+          {fields.filter(f=>resource!=="calls" || (f.name!=="advance_type" || callKind==="advance") && (f.name!=="project" || callKind==="works") && (f.name!=="decision" || callKind!=="current")).map((f) => (
             <label key={f.name}>
               {f.label}
               {!f.optional && " *"}
@@ -1030,7 +1037,7 @@ function FinanceForm({
                         (f.optional ? "" : f.options[0]?.value || ""))
                   }
                   onChange={
-                    f.name === "supplier_record"
+                    f.name === "kind" ? (e)=>setCallKind(e.target.value) : f.name === "supplier_record"
                       ? (e) => setSupplierRecord(e.target.value)
                       : undefined
                   }

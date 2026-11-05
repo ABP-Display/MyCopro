@@ -8,9 +8,11 @@ import { AssemblyWorkflow } from "./AssemblyWorkflow";
 export function Assemblies({
   section,
   onGuide,
+  quickTemplate,
 }: {
   section: string;
   onGuide: () => void;
+  quickTemplate?: {id:number;type:string}|null;
 }) {
   const [meetings, setMeetings] = useState<ToolData[]>([]);
   const [selected, setSelected] = useState("");
@@ -21,6 +23,15 @@ export function Assemblies({
   const [archives, setArchives] = useState(false);
   const request = useRef(0);
   const meeting = meetings.find((m) => String(m.id) === selected);
+  const consumedTemplate=useRef<number|null>(null);
+  useEffect(()=>{if(!quickTemplate||consumedTemplate.current===quickTemplate.id)return;
+    if(!meeting){setError("Commencez par créer ou sélectionner une assemblée avec le bouton Préparer une AG.");return;}
+    if(meeting.phase && meeting.phase!=="draft"){setError("Cette assemblée est déjà convoquée. Préparez les nouvelles résolutions dans une autre assemblée.");consumedTemplate.current=quickTemplate.id;return;}
+    let active=true;const position=Math.max(0,...meeting.resolutions.map((r:ToolData)=>r.position))+1;
+    if(quickTemplate.type==="free"){setEditor({kind:"resolution",meeting:meeting.id,position});consumedTemplate.current=quickTemplate.id;return;}
+    api<ToolData>("ag/workflow-context").then(d=>{if(!active)return;const template=d.templates.find((t:ToolData)=>t.id===quickTemplate.type);if(!template)throw new Error("Modèle indisponible.");setEditor({kind:"resolution",meeting:meeting.id,position,item:{title:template.title,text:template.text,majority:template.majority}});consumedTemplate.current=quickTemplate.id;}).catch(e=>{if(active)setError(e.message);});
+    return()=>{active=false;};
+  },[quickTemplate?.id,meeting?.id]);
   async function load() {
     const current = ++request.current;
     try {
@@ -324,10 +335,10 @@ export function Assemblies({
         <AssemblyDialog
           title={
             editor.kind === "meeting"
-              ? editor.item
+              ? editor.item?.id
                 ? "Modifier l’assemblée"
                 : "Préparer une assemblée"
-              : editor.item
+              : editor.item?.id
                 ? "Modifier la résolution"
                 : "Ajouter une résolution"
           }
@@ -342,16 +353,16 @@ export function Assemblies({
               );
               const path =
                 editor.kind === "meeting"
-                  ? editor.item
+                  ? editor.item?.id
                     ? `ag/meetings/${editor.item.id}`
                     : "ag/meetings"
-                  : editor.item
+                  : editor.item?.id
                     ? `ag/resolutions/${editor.item.id}`
                     : `ag/meetings/${editor.meeting}/resolutions`;
               const saved = await save(
                 path,
                 body,
-                editor.item ? "PATCH" : "POST",
+                editor.item?.id ? "PATCH" : "POST",
               );
               if (saved) {
                 if (editor.kind === "meeting" && saved.id)

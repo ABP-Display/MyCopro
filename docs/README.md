@@ -15,6 +15,7 @@ Le dossier source reste `/docs` dans GitHub Pages. Les autres sous-dossiers sont
 exclus de la publication depuis une branche. Le workflow manuel ne copie que
 la vitrine et ses ressources.
 
+- [Les trois parcours quotidiens](guides/GESTION-QUOTIDIENNE.md)
 - [Publication GitHub Pages](guides/GITHUB-PAGES.md)
 - [Architecture](guides/ARCHITECTURE.md)
 - [Six priorités quotidiennes : intranet, factures et modèles](guides/PRIORITES-QUOTIDIEN.md)

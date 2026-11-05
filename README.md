@@ -13,6 +13,8 @@ Django / Python et PostgreSQL.
 
 Les comptes à consulter et dépenses à valider sont regroupés dans **Gestion financière → Gestion comptable**. Le menu Conseil syndical est retiré ; **Assemblées générales → Personnes élues & rôles** récapitule les désignations enregistrées depuis les décisions, sans attribution automatique de permissions.
 
+La navigation quotidienne est maintenant centrée sur **Charges & finances**, **Gestion comptable** (rapports compris) et **Assemblées générales**. Les réglages et états détaillés restent dans Opérations avancées. Voir le [guide des trois parcours](docs/guides/GESTION-QUOTIDIENNE.md).
+
 ## Fonctionnalités disponibles
 
 | Thème | Ce que permet l’application |
