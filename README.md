@@ -11,6 +11,8 @@ Django / Python et PostgreSQL.
 [Guide des usages quotidiens](docs/guides/PRIORITES-QUOTIDIEN.md) ·
 [Prochains chantiers](docs/guides/PROCHAINS-CHANTIERS.md)
 
+Les comptes à consulter et dépenses à valider sont regroupés dans **Gestion financière → Gestion comptable**. Le menu Conseil syndical est retiré ; **Assemblées générales → Personnes élues & rôles** récapitule les désignations enregistrées depuis les décisions, sans attribution automatique de permissions.
+
 ## Fonctionnalités disponibles
 
 | Thème | Ce que permet l’application |

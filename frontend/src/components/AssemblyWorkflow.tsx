@@ -847,6 +847,11 @@ export function AssemblyWorkflow({
         </section>
       )}
 
+      {section === "elected" && <section className="panel">
+        <div className="panel-heading"><div><h2>Personnes élues et rôles</h2><p>Élections enregistrées depuis les décisions de cette assemblée.</p></div></div>
+        <div className="ag-form"><p>Après le vote et la signature du PV, utilisez « Décisions à mettre en œuvre » pour inscrire la personne élue, sa fonction et les dates de son mandat. Cette inscription ne crée pas de droit de connexion.</p>
+        {recorded.filter(v => v.execution && ["council","syndic"].includes(v.execution.kind)).length ? <div className="ag-elected-table"><table><thead><tr><th>Copropriétaire élu</th><th>Rôle inscrit au PV</th><th>Début</th><th>Fin</th><th>Résolution</th></tr></thead><tbody>{recorded.filter(v => v.execution && ["council","syndic"].includes(v.execution.kind)).map(v => {const m=v.execution.data;return <tr key={v.id}><td>{m.name}</td><td>{m.role || (v.execution.kind === "council" ? "Membre du conseil syndical" : "Syndic bénévole")}{m.notes && <p className="muted">{m.notes}</p>}</td><td>{dateLabel(m.starts_on)}</td><td>{dateLabel(m.ends_on)}</td><td>{meeting.resolutions.find((r:Row)=>r.id===v.resolution)?.title || m.reference}</td></tr>;})}</tbody></table></div> : <p>Aucune élection enregistrée pour cette assemblée.</p>}</div>
+      </section>}
       {section === "decisions" && (
         <section className="panel">
           <h2>Mettre en œuvre les décisions</h2>
@@ -2276,6 +2281,10 @@ function Execution({
                   </option>
                 ))}
             </select>
+          </label>
+          <label>
+            Fonction inscrite dans la décision / le PV
+            <input key={kind} name="role" maxLength={100} required defaultValue={kind === "council" ? "Membre du conseil syndical" : "Syndic bénévole"} />
           </label>
           <label>
             Début du mandat

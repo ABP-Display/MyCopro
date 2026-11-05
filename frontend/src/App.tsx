@@ -323,9 +323,9 @@ function Application() {
               ["reconciliation", "funds"].includes(section)) ||
             (page === "reporting" && ["annexes", "aged"].includes(section)) ? (
             <AccountingCycle key={section} section={section} />
-          ) : page === "council" ? (
+          ) : page === "accounting" && ["consult-accounts", "approvals"].includes(section) ? (
             <Suspense fallback={<p role="status">Chargement du conseil…</p>}>
-              <Council section={section} />
+              <Council section={section === "consult-accounts" ? "accounts" : "approvals"} />
             </Suspense>
           ) : page === "assemblies" && section === "guide" ? (
             <Suspense fallback={<p role="status">Chargement du guide…</p>}>

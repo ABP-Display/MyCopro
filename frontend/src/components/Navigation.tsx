@@ -8,18 +8,6 @@ export const sections: Record<
   string,
   { label: string; icon: string; items: [string, string][] }
 > = {
-  council: {
-    label: "Conseil syndical",
-    icon: "shield",
-    items: [
-      ["mandates", "Composition & mandats"],
-      ["approvals", "Dépenses à valider"],
-      ["accounts", "Consulter les comptes"],
-      ["controls", "Contrôle indépendant"],
-      ["history", "Historique du conseil"],
-      ["settings", "Mode & règles"],
-    ],
-  },
   operations: {
     label: "Travaux & entretien",
     icon: "building",
@@ -55,6 +43,7 @@ export const sections: Record<
       ["minutes", "Procès-verbal & signatures"],
       ["notifications", "Notifications & délais"],
       ["decisions", "Décisions à mettre en œuvre"],
+      ["elected", "Personnes élues & rôles"],
       ["history", "Registre & historique"],
     ],
   },
@@ -96,6 +85,8 @@ export const sections: Record<
     label: "Gestion comptable",
     icon: "book",
     items: [
+      ["consult-accounts", "Consulter les comptes"],
+      ["approvals", "Dépenses à valider"],
       ["accounts", "Plan comptable"],
       ["opening", "Reprise des soldes"],
       ["allocation", "Répartitions à vérifier"],
@@ -149,12 +140,15 @@ export const navigationThemes = [
   { label: "Entretien & prestataires", pages: ["operations", "partners"] },
   {
     label: "Vie de la copropriété",
-    pages: ["council", "assemblies", "communication", "documents"],
+    pages: ["assemblies", "communication", "documents"],
   },
   { label: "Outils & paramètres", pages: ["tools", "administration"] },
 ];
 
 export function navigationDestination(page: string, section?: string) {
+  if (page === "council") return ["accounts", "approvals"].includes(section||"")
+    ? {page:"accounting",section:section==="accounts"?"consult-accounts":"approvals"}
+    : {page:"assemblies",section:"elected"};
   if (page === "operations" && section) {
     if (["suppliers", "contracts", "certificates"].includes(section))
       return { page: "partners", section };

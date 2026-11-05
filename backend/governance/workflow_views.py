@@ -254,6 +254,7 @@ def execute_decision(workflow, user, data):
         result = {
             "owner": owner.pk,
             "name": str(owner),
+            "role": service.text(data.get("role") or ("Membre du conseil syndical" if kind == "council" else "Syndic bénévole"), 100),
             "starts_on": str(start),
             "ends_on": str(end),
             "reference": reference,

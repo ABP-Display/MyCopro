@@ -435,6 +435,25 @@ class AssemblyWorkflowTests(TestCase):
         self.assertEqual(AssemblyMandate.objects.get().decision.vote_id, vote)
         self.act("execute", {**body, "ends_on": "2029-11-21"}, 400)
 
+    def test_elected_council_role_is_saved_without_granting_access(self):
+        from .models import AssemblyMandate
+        from council.models import Mandate
+        self.resolution.majority = "25"
+        self.resolution.save()
+        self.freeze(); self.invite(); self.attend(); self.start()
+        data = self.vote(); self.sign()
+        body = {"vote": data["votes"][0]["id"], "kind": "council",
+                "owner": self.owners[0].pk, "starts_on": "2026-11-21",
+                "ends_on": "2029-11-21", "reviewed": True, "role": "Membre du conseil syndical"}
+        before = Mandate.objects.count()
+        self.act("execute", {**body, "role": "x" * 101}, 400)
+        self.assertFalse(AssemblyMandate.objects.exists())
+        response = self.act("execute", body)
+        mandate = AssemblyMandate.objects.get()
+        self.assertEqual(mandate.owner_id, self.owners[0].pk)
+        self.assertEqual(mandate.decision.data["role"], body["role"])
+        self.assertEqual(Mandate.objects.count(), before)
+
     def test_budget_duplicate_posts_roll_back_then_valid_budget_records_source(self):
         from finance.models import Budget
 

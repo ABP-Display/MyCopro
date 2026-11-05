@@ -5,26 +5,6 @@ export const categoryHelp: Record<
   string,
   { description: string; advice: string; items: Record<string, string> }
 > = {
-  council: {
-    description:
-      "Organisez les responsabilités, examinez les pièces et conservez les avis du conseil ainsi que le contrôle indépendant des comptes.",
-    advice:
-      "Enregistrez les désignations avec leurs pièces et leurs dates, puis préparez et contrôlez les dépenses. Les avis du conseil et l’exécution par le syndic restent distincts.",
-    items: {
-      mandates:
-        "Retrouvez les membres, leurs responsabilités et leurs mandats. L’administrateur principal attribue les accès datés depuis une décision documentée.",
-      approvals:
-        "Soumettez une facture, un devis ou une préparation. Les membres du conseil donnent des avis motivés avant l’exécution par le syndic.",
-      accounts:
-        "Examinez les écritures, factures, banques, budgets, contrats et pièces en lecture seule.",
-      controls:
-        "Le contrôleur indépendant prépare une checklist et conserve son rapport avec les pièces et l’état des comptes examinés.",
-      history:
-        "Consultez les mandats, modifications des règles, demandes, avis et rapports avec leur date et leur auteur.",
-      settings:
-        "Choisissez le mode bénévole ou coopératif et documentez la règle de contrôle des dépenses, son seuil et le nombre d’avis requis.",
-    },
-  },
   operations: {
     description:
       "Suivez les travaux, sinistres et échéances de votre immeuble avec leurs pièces et décisions.",
@@ -83,6 +63,7 @@ export const categoryHelp: Record<
         "Produisez un PV depuis les votes, puis rattachez le PV et la feuille de présence signés. Partagez ensuite un résumé des décisions.",
       notifications:
         "Retrouvez les opposants et défaillants, conservez les preuves de notification et suivez les délais de contestation.",
+      elected: "Retrouvez les copropriétaires élus, leurs fonctions et les dates des mandats enregistrés depuis les décisions de cette assemblée.",
       decisions:
         "Reprenez un budget adopté ou créez des appels en brouillon à partir d’une décision inscrite au PV signé.",
       history:
@@ -149,6 +130,8 @@ export const categoryHelp: Record<
     advice:
       "Les appels de fonds, factures et règlements créent leurs écritures automatiquement. La saisie manuelle est réservée aux autres opérations : ne saisissez pas une seconde fois la même dépense.",
     items: {
+      "consult-accounts": "Consultez en lecture les écritures, factures, banques, budgets et pièces.",
+      approvals: "Préparez une demande et recueillez les avis sur une dépense avant son exécution.",
       accounts:
         "Un compte sert à classer une opération : banque, fournisseurs, charges… Complétez le plan français avant de saisir des opérations détaillées.",
       opening:

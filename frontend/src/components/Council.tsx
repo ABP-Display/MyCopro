@@ -1518,7 +1518,7 @@ export function CouncilPortal({
   onUser: (user: User) => void;
   onLogout: () => Promise<void>;
 }) {
-  const [section, setSection] = useState("mandates");
+  const [section, setSection] = useState("accounts");
   const [member, setMember] = useState(false);
   const [error, setError] = useState("");
   if (member && user.has_owner)
@@ -1526,7 +1526,7 @@ export function CouncilPortal({
       <>
         <div className="council-back">
           <button className="button primary" onClick={() => setMember(false)}>
-            Revenir au conseil syndical
+            Revenir à la gestion financière
           </button>
         </div>
         <MemberPortal user={user} onUser={onUser} onLogout={onLogout} />
@@ -1540,7 +1540,7 @@ export function CouncilPortal({
           Copro.
         </a>
         <div>
-          <span className="subtle-badge">Conseil & contrôle</span>
+          <span className="subtle-badge">Gestion financière</span>
           <SecurityButton onUser={onUser} />
           {user.has_owner && (
             <button
@@ -1570,10 +1570,10 @@ export function CouncilPortal({
       </header>
       <main>
         <p className="eyebrow">BONJOUR {user.display_name || user.username}</p>
-        <h1>Conseil syndical & contrôles</h1>
+        <h1>Gestion financière</h1>
         {error && <p className="alert">{error}</p>}
-        <nav className="council-tabs" aria-label="Rubriques du conseil">
-          {Object.entries(sections).map(([id, title]) => (
+        <nav className="council-tabs" aria-label="Gestion financière">
+          {Object.entries(sections).filter(([id]) => ["accounts", "approvals"].includes(id)).map(([id, title]) => (
             <button
               key={id}
               className={section === id ? "active" : ""}

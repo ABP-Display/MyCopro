@@ -383,3 +383,5 @@
     padding: 0 !important;
   }
 }
+
+.ag-elected-table{max-width:100%;overflow:auto}.ag-elected-table table{width:100%;min-width:600px;border-collapse:collapse}.ag-elected-table :is(th,td){padding:13px 16px;border-bottom:1px solid #edf0e9;text-align:left;font-size:12px}.ag-elected-table th{background:#fafbf8;color:#64715b;font-weight:500}

@@ -1,5 +1,7 @@
 # Conseil syndical, responsabilités et contrôle
 
+> Navigation mise à jour : la rubrique Conseil syndical a été retirée. Ses deux pages conservées sont dans **Gestion financière → Gestion comptable → Consulter les comptes / Dépenses à valider**. Les élus et fonctions se retrouvent dans **Assemblées générales → Personnes élues & rôles**, par assemblée. Les autres anciens écrans décrits ci-dessous ne sont plus proposés dans le menu ; les mandats et règles déjà enregistrés restent conservés pour les contrôles d’accès.
+
 Le menu **Conseil syndical** regroupe les mandats, les avis sur les dépenses,
 la consultation des comptes et le contrôle indépendant. Le parcours s’applique
 à la copropriété unique gérée par l’instance.
