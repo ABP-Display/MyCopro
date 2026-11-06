@@ -15,6 +15,8 @@ Les comptes à consulter et dépenses à valider sont regroupés dans **Gestion 
 
 La navigation quotidienne est maintenant centrée sur **Charges & finances**, **Gestion comptable** (rapports compris) et **Assemblées générales**. Les réglages et états détaillés restent dans Opérations avancées. Voir le [guide des trois parcours](docs/guides/GESTION-QUOTIDIENNE.md).
 
+L’application est également **installable en PWA** et adaptée au mobile. La version `AAAA.MM.JJ.HHMM`, affichée en bas de page, ouvre une confirmation de rechargement. La fenêtre de sécurité sépare mot de passe et double authentification. Voir le [guide PWA et mobile](docs/guides/PWA-MOBILE.md) pour l’installation HTTPS et les limites hors connexion.
+
 ## Fonctionnalités disponibles
 
 | Thème | Ce que permet l’application |

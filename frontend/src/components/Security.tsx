@@ -19,16 +19,17 @@ export function SecurityButton({ onUser }: { onUser: (user: User) => void }) {
 
 function SecurityDialog({ onUser, onClose }: { onUser: (user: User) => void; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const [tab,setTab]=useState("protection"),[notice,setNotice]=useState("");
   useEffect(() => { dialog.current?.showModal(); }, []);
-  return <dialog ref={dialog} className="editor-dialog security-dialog" onCancel={onClose} aria-labelledby="security-dialog-title">
-    <div className="dialog-heading"><h2 id="security-dialog-title">Mon compte et ma sécurité</h2>
-      <button className="icon-button" onClick={onClose} aria-label="Fermer"><Icon name="close" /></button>
-    </div>
-    <SecurityPanel onUser={onUser} />
+  return <dialog ref={dialog} className="editor-dialog security-dialog" onCancel={e=>{e.preventDefault();onClose();}} aria-labelledby="security-dialog-title">
+    <header className="security-modal-heading"><span className="security-modal-symbol"><Icon name="shield" size={23}/></span><div><p className="eyebrow">ESPACE PERSONNEL</p><h2 id="security-dialog-title">Mon compte et ma sécurité</h2><p>Vos accès, votre mot de passe et votre protection.</p></div><button className="icon-button" onClick={onClose} aria-label="Fermer"><Icon name="close" /></button></header>
+    <nav className="security-modal-tabs" aria-label="Sécurité du compte"><button aria-pressed={tab==="protection"} onClick={()=>setTab("protection")}>Double authentification</button><button aria-pressed={tab==="password"} onClick={()=>setTab("password")}>Mot de passe</button></nav>
+    <div className="security-modal-body">{notice&&<p className="security-success" role="status">{notice}</p>}{tab==="protection"?<SecurityPanel onUser={onUser} showPassword={false}/>:<ChangePassword onChanged={user=>{onUser(user);setNotice("Votre mot de passe a été mis à jour.");setTab("protection");}} onCancel={()=>setTab("protection")}/>}</div>
+    <footer className="security-modal-footer"><p>Les modifications prennent effet après validation.</p><button className="button secondary" onClick={onClose}>Fermer</button></footer>
   </dialog>;
 }
 
-export function SecurityPanel({ onUser, mandatory = false }: { onUser: (user: User) => void; mandatory?: boolean }) {
+export function SecurityPanel({ onUser, mandatory = false, showPassword=true }: { onUser: (user: User) => void; mandatory?: boolean; showPassword?:boolean }) {
   const [status, setStatus] = useState<SecurityStatus | null>(null);
   const [setup, setSetup] = useState<Setup | null>(null);
   const [codes, setCodes] = useState<string[]>([]);
@@ -103,7 +104,7 @@ export function SecurityPanel({ onUser, mandatory = false }: { onUser: (user: Us
           {status.mfa_enabled && !status.mfa_required && <button type="button" className="button secondary" disabled={busy || !password || !code} onClick={() => void act("disable")}>Désactiver la double authentification</button>}
         </div>
       </form>}
-      {!mandatory && !setup && <button className="text-link" onClick={() => setChangePassword(!changePassword)}>Changer mon mot de passe</button>}
+      {showPassword && !mandatory && !setup && <button className="text-link" onClick={() => setChangePassword(!changePassword)}>Changer mon mot de passe</button>}
       {changePassword && <ChangePassword onChanged={onUser} onCancel={() => setChangePassword(false)} />}
     </>}
   </div>;

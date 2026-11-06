@@ -1,7 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import {appVersion,pwaPlugin} from "./pwa";
+const version=appVersion();
 export default defineConfig(({ mode }) => ({
+  define: {__APP_VERSION__:JSON.stringify(version)},
   plugins: [
+    ...(mode!=="pages"?[pwaPlugin(version)]:[]),
     react(),
     ...(mode === "pages"
       ? [
@@ -10,7 +14,7 @@ export default defineConfig(({ mode }) => ({
             transformIndexHtml: {
               order: "pre" as const,
               handler: (html: string) =>
-                html.replace("/src/main.tsx", "/src/pages.tsx"),
+                html.replace("/src/main.tsx", "/src/pages.tsx").replace(/<link rel="manifest"[^>]*>/g, ""),
             },
           },
         ]
