@@ -1,0 +1,17 @@
+{
+  "id": "/connexion",
+  "name": "Copro. — Ma copropriété",
+  "short_name": "Copro.",
+  "description": "Comptes, documents et assemblées de votre copropriété.",
+  "lang": "fr",
+  "start_url": "/connexion",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8f5",
+  "theme_color": "#244f3e",
+  "icons": [
+    {"src":"/icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"/icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
+    {"src":"/icons/maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+  ]
+}

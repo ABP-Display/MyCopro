@@ -1,13 +1,5 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import { AppExperience } from "./components/AppExperience";
-import { App } from "./App";
-import "./styles.css";
-import "./components/app-experience.css";
-
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-    <AppExperience />
-  </React.StrictMode>,
-);
+import './styles.css';
+import './simple.css';
+import {createRoot} from 'react-dom/client';
+import {App} from './App';
+createRoot(document.getElementById('root')!).render(<App/>);

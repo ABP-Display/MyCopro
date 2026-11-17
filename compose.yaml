@@ -4,39 +4,40 @@ services:
     image: postgres:16-bookworm
     restart: unless-stopped
     environment:
-      POSTGRES_DB: copro
+      POSTGRES_DB: copro_simple
       POSTGRES_USER: copro
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Compléter .env}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - simple_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U copro -d copro"]
+      test: [CMD-SHELL, "pg_isready -U copro -d copro_simple"]
       interval: 5s
       timeout: 5s
       retries: 20
   backend:
     build: ./backend
     restart: unless-stopped
-    volumes:
-      - document_data:/app/media
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Compléter .env}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,copro.ydoxide.fr}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-https://copro.ydoxide.fr}
       HTTPS_ONLY: ${HTTPS_ONLY:-0}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Compléter .env}
       POSTGRES_HOST: db
+      POSTGRES_DB: copro_simple
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Compléter .env}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Compléter .env}
+    volumes:
+      - simple_document_data:/app/media
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/', timeout=5)"]
-      interval: 15s
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/', timeout=5)"]
+      interval: 10s
       timeout: 5s
       start_period: 30s
-      retries: 5
+      retries: 10
   frontend:
     build: ./frontend
     restart: unless-stopped
@@ -46,10 +47,10 @@ services:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/api/health/"]
-      interval: 15s
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/api/health/]
+      interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 volumes:
-  postgres_data:
-  document_data:
+  simple_postgres_data:
+  simple_document_data:

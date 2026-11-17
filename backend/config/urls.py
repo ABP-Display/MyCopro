@@ -1,24 +1,15 @@
-from django.urls import path, include
-from core import views
-from safety.views import verify_login
+from django.urls import path
+from copro import views
 
 urlpatterns = [
-    path("api/security/", include("safety.urls")),
-    path("api/login/verify/", verify_login),
-    path("api/council/", include("council.urls")),
-    path("api/operations/",include("operations.urls")),
-    path("api/ag/",include("governance.urls")),
-    path("api/documents/",include("documents.urls")),
-    path("api/finance/",include("finance.urls")),
-    path("api/health/", views.health),
-    path("api/session/", views.session),
-    path("api/login/", views.sign_in),
-    path("api/logout/", views.sign_out),
-    path("api/password/", views.change_password),
-    path("api/owners/<int:pk>/access/", views.owner_access),
-    path("api/overview/", views.overview),
-    path("api/owners/", views.owners),
-    path("api/owners/<int:pk>/", views.owner_detail),
-    path("api/lots/", views.lots),
-    path("api/lots/<int:pk>/", views.lot_detail),
+    path('api/ag/electorate/',views.electorate),path('api/ag/tools/<str:kind>/',views.tools),
+    path('api/health/',views.health),path('api/session/',views.session),
+    path('api/login/',views.login),path('api/logout/',views.logout),path('api/password/',views.password),
+    path('api/state/',views.state),path('api/owners/',views.owners),path('api/owners/<int:pk>/',views.owners),
+    path('api/lots/',views.lots),path('api/lots/<int:pk>/',views.lots),
+    path('api/banks/',views.banks),path('api/banks/<int:pk>/',views.banks),
+    path('api/calls/<str:action>/',views.calls),path('api/payments/',views.payments),
+    path('api/payments/<int:pk>/<str:action>/',views.payments),path('api/movements/',views.movements),
+    path('api/posts/',views.posts),path('api/posts/<int:pk>/',views.posts),path('api/attachments/<int:pk>/',views.download),
+    path('api/administration/<str:resource>/',views.administration),
 ]
