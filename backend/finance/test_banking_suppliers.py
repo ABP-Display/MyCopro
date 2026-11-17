@@ -55,6 +55,44 @@ class BankingSupplierTests(TestCase):
         self.assertEqual(data['unassigned'],[])
         self.assertEqual(Entry.objects.count(),before)
 
+    def test_bank_statement_tracks_selected_account_receipt_invoice_and_transfer(self):
+        bank = self.bank('5121', holder='Syndicat Exemple', bic='AGRIFRPP', iban='FR7630006000011234567890189')
+        other = self.bank('5122')
+        self.entry([{'code':'5121','debit':'100'},{'code':'701','credit':'100'}])
+        receipt = self.send('receipts', {'year':self.year.pk,'owner':self.owner.pk,'date':'2026-02-02','amount':'50','bank':bank.pk})
+        self.assertEqual(receipt.status_code,201,receipt.content)
+        invoice = self.invoice().json()
+        response = self.send(f'expenses/{invoice["id"]}/pay', {'date':'2026-02-03','amount':'30','bank':bank.pk})
+        self.assertEqual(response.status_code,200,response.content)
+        self.assertEqual(self.transfer(bank,other,date='2026-02-04').status_code,201)
+        before = Entry.objects.count()
+        path = f'/api/finance/banks/{bank.pk}/movements/'
+        response = self.client.get(path, {'from':'2026-02-01','to':'2026-02-28'})
+        self.assertEqual(response.status_code,200,response.content)
+        data = response.json()
+        self.assertEqual((data['opening'],data['incoming'],data['outgoing'],data['closing']),('100.00','50.00','50.00','100.00'))
+        self.assertEqual([r['balance'] for r in data['items']],['150.00','120.00','100.00'])
+        self.assertEqual(data['items'][0]['payer'],str(self.owner))
+        self.assertEqual(data['items'][1]['expense'],invoice['id'])
+        self.assertEqual(data['bank']['holder'],'Syndicat Exemple')
+        self.assertEqual(Entry.objects.count(),before)
+        self.assertEqual(self.member.get(path).status_code,403)
+        self.assertEqual(Client().get(path).status_code,401)
+        for query in [{'from':'bad'}, {'from':'2026-03-01','to':'2026-02-01'}, {'page':'0'}]:
+            self.assertEqual(self.client.get(path,query).status_code,400)
+
+    def test_bank_statement_pagination_and_carry_do_not_duplicate_history(self):
+        bank = self.bank()
+        for _ in range(102):
+            self.entry([{'code':bank.account.code,'debit':'1'},{'code':'701','credit':'1'}])
+        carry = self.entry([{'code':bank.account.code,'debit':'102'},{'code':'701','credit':'102'}])
+        carry.kind='carry'; carry.save(update_fields=['kind'])
+        path = f'/api/finance/banks/{bank.pk}/movements/'
+        data = self.client.get(path, {'from':'2026-01-01','to':'2026-01-31','page':'2'}).json()
+        self.assertEqual((data['count'],data['pages'],len(data['items'])),(102,2,2))
+        self.assertEqual(data['items'][0]['balance'],'101.00')
+        self.assertEqual(data['closing'],'102.00')
+
     def test_unassigned_bank_accounts_and_date_filter_remain_visible(self):
         self.entry([{'code':'512','debit':'100'},{'code':'701','credit':'100'}])
         self.entry([{'code':'512','debit':'50'},{'code':'701','credit':'50'}],day='2026-02-01')

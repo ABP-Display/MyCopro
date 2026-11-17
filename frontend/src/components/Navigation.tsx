@@ -56,7 +56,7 @@ export const sections: Record<
   finance: {label:"Charges & finances",icon:"wallet",items:[
     ["calls","Demander des charges"],["payments","Paiements des copropriétaires"],["funding","Fonds travaux & appels exceptionnels"]]},
   accounting: {label:"Gestion comptable",icon:"book",items:[
-    ["history","Comptes & historique"],["expenses","Factures à régler"],["approvals","Dépenses à valider"],["reports","Rapports mensuels / trimestriels"],["advanced","Opérations avancées"]]},
+    ["banks","Comptes bancaires"],["history","Comptes & historique"],["expenses","Factures à régler"],["approvals","Dépenses à valider"],["reports","Rapports mensuels / trimestriels"],["advanced","Opérations avancées"]]},
   administration: {
     label: "Administration",
     icon: "shield",

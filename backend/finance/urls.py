@@ -4,6 +4,7 @@ from . import advanced
 from . import banking
 from . import cycle_views, funding_views, residents, notices
 urlpatterns=[
+    path('banks/<int:pk>/movements/', banking.movements),
     path('resident-context/', residents.context),
     path('residents/', residents.owners),
     path('residents/<int:pk>/', residents.owners),

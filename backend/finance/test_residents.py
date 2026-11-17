@@ -90,6 +90,9 @@ class ResidentJourneyTests(TestCase):
         self.assertEqual(Decimal(data['summary']['paid']),100)
         self.assertEqual(data['receipts'][0]['lots'][0]['number'],'A1')
         self.assertNotIn('Bob',json.dumps(data))
+        statement=self.client.get(f'/api/finance/banks/{self.bank.pk}/movements/?from=2026-02-01&to=2026-02-28')
+        self.assertEqual(statement.status_code,200,statement.content)
+        self.assertEqual(statement.json()['items'][0]['paid_for'],[{'lot':'A1','call':call.label,'amount':'100.00'}])
         receipt=Receipt.objects.get()
         with transaction.atomic():
             self.year.refresh_from_db()

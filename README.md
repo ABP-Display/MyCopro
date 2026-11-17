@@ -21,6 +21,8 @@ Le [parcours charges, paiements et lots](docs/guides/CHARGES-PAIEMENTS-LOTS.md) 
 
 ## Fonctionnalités disponibles
 
+**Gestion comptable → Comptes bancaires** permet de créer les fiches des comptes (nom, établissement, titulaire, IBAN et BIC), de consulter leur solde à une date et leurs entrées/sorties par période. Les mouvements conservent leurs liens avec les paiements des copropriétaires, les appels/lots explicitement affectés et les factures fournisseurs. Le compte bancaire se choisit lors de l’enregistrement d’un paiement reçu ou du règlement d’une facture. Les soldes de départ passent par une reprise équilibrée, sans écraser l’historique.
+
 | Thème | Ce que permet l’application |
 | --- | --- |
 | Copropriété | Annuaire des copropriétaires, lots, tantièmes, clés de répartition et changements de propriétaire avec historique. |

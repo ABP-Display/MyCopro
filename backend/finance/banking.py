@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from core.views import manager_required, payload
-from .models import Account, BankAccount, BankTransfer, Line, Organization, CostCenter, AuditEvent
+from .models import Account, BankAccount, BankTransfer, Line, Organization, CostCenter, AuditEvent, Receipt, ExpensePayment, Expense
 from .services import amount, open_year, post_entry
 from .views import errors
 
@@ -46,6 +46,64 @@ def transfer_data(item):
             'source_name': item.source.name, 'destination': item.destination_id, 'destination_name': item.destination.name,
             'amount': str(item.amount), 'date': item.entry.date, 'number': item.entry.number,
             'reference': item.entry.reference, 'label': item.entry.label}
+
+
+@require_http_methods(['GET'])
+@manager_required
+@errors
+def movements(request, pk):
+    bank = BankAccount.objects.select_related('account').get(pk=pk)
+    end = date.fromisoformat(request.GET.get('to') or str(timezone.localdate()))
+    start = date.fromisoformat(request.GET.get('from') or f'{end.year}-01-01')
+    page = int(request.GET.get('page', '1'))
+    if start > end or page < 1:
+        raise ValueError('Période ou page invalide.')
+    # Same basis as the account cards: carry forwards must not duplicate history.
+    lines = Line.objects.filter(account=bank.account).exclude(entry__kind='carry')
+    def totals(qs):
+        sums = qs.aggregate(debit=Sum('debit'), credit=Sum('credit'))
+        return (sums['debit'] or Decimal(0), sums['credit'] or Decimal(0))
+    opening_debit, opening_credit = totals(lines.filter(entry__date__lt=start))
+    opening = opening_debit - opening_credit
+    period = lines.filter(entry__date__gte=start, entry__date__lte=end)
+    incoming, outgoing = totals(period)
+    count = period.count()
+    offset = (page - 1) * 100
+    ordered = period.order_by('entry__date', 'entry_id', 'id')
+    rows = list(ordered.select_related('entry', 'entry__year')[offset:offset + 100])
+    ids = [row.entry_id for row in rows]
+    receipts = {r.entry_id: r for r in Receipt.objects.filter(entry_id__in=ids).select_related('owner').prefetch_related(
+        'lot_allocations__allocation__call', 'lot_allocations__allocation__lot', 'lot_allocations__settlement')}
+    payments = {p.entry_id: p.expense for p in ExpensePayment.objects.filter(entry_id__in=ids).select_related('expense')}
+    # Also show links for older invoices recorded before split payments existed.
+    legacy = {e.payment_entry_id: e for e in Expense.objects.filter(payment_entry_id__in=ids)}
+    counterparts = {}
+    for line in Line.objects.filter(entry_id__in=ids).exclude(account=bank.account).select_related('account', 'owner', 'supplier'):
+        counterparts.setdefault(line.entry_id, []).append({
+            'account': line.account.code, 'label': line.account.name,
+            'person': str(line.owner) if line.owner_id else (line.supplier.name if line.supplier_id else ''),
+        })
+    before_debit, before_credit = totals(period.filter(pk__in=ordered.values('pk')[:offset])) if offset else (Decimal(0), Decimal(0))
+    running = opening + before_debit - before_credit
+    items = []
+    for row in rows:
+        running += row.debit - row.credit
+        receipt, expense = receipts.get(row.entry_id), payments.get(row.entry_id) or legacy.get(row.entry_id)
+        items.append({'id': row.pk, 'entry': row.entry_id, 'number': row.entry.number,
+                      'year': row.entry.year.name, 'date': row.entry.date, 'label': row.entry.label,
+                      'reference': row.entry.reference, 'incoming': str(row.debit), 'outgoing': str(row.credit),
+                      'balance': str(running), 'counterparts': counterparts.get(row.entry_id, []),
+                      'owner': receipt.owner_id if receipt else None,
+                      'payer': str(receipt.owner) if receipt else '',
+                      'paid_for': [{'lot': link.allocation.lot.number, 'call': link.allocation.call.label, 'amount': str(link.amount)}
+                                   for link in receipt.lot_allocations.all() if link.settlement.active] if receipt else [],
+                      'expense': expense.pk if expense else None,
+                      'supplier': expense.supplier if expense else '',
+                      'document': expense.document_id if expense else None})
+    return JsonResponse({'bank': bank_data(bank, opening + incoming - outgoing), 'from': start, 'to': end,
+                         'opening': str(opening), 'incoming': str(incoming), 'outgoing': str(outgoing),
+                         'closing': str(opening + incoming - outgoing), 'items': items,
+                         'page': page, 'pages': max(1, (count + 99) // 100), 'count': count})
 
 
 @require_http_methods(['GET', 'POST', 'PATCH'])

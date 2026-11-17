@@ -317,8 +317,8 @@ function Application() {
             <Operations section={section} />
           ) : page === "finance" && section === "reminders" ? (
             <Operations section="reminders" />
-          ) : page === "finance" && section === "banks" ? (
-            <Banking />
+          ) : ["finance", "accounting"].includes(page) && section === "banks" ? (
+            <Banking onNavigate={(destination, child)=>navigate(destination as Page, child)} />
           ) : page === "finance" && section === "funding" ? (
             <Funding />
           ) : (page === "accounting" &&

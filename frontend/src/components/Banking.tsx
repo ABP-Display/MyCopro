@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { api, newOperationId as requestId } from "../api";
 import { Icon } from "./ui";
 import { OperationsDialog } from "./OperationsViews";
+import { AccountingCycle } from "./AccountingCycle";
+import { BankMovements } from "./BankMovements";
 import "./operations.css";
 
 type Bank = {
@@ -55,7 +57,9 @@ const money = (v: string) =>
 const today = () =>
   new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });
 
-export function Banking() {
+export function Banking({onNavigate}: {onNavigate?: (page:string, section:string)=>void}) {
+  const [history, setHistory] = useState<Bank | null>(null);
+  const [opening, setOpening] = useState(false);
   const [data, setData] = useState<Data | null>(null);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [years, setYears] = useState<Year[]>([]);
@@ -129,7 +133,7 @@ export function Banking() {
   const visible = banks.filter(
     (b) =>
       (archives || b.active) &&
-      `${b.name} ${b.bank_name} ${b.account_code}`
+      `${b.name} ${b.bank_name} ${b.account_code} ${b.holder} ${b.iban}`
         .toLocaleLowerCase("fr")
         .includes(search.toLocaleLowerCase("fr")),
   );
@@ -149,7 +153,7 @@ export function Banking() {
           <Icon name="wallet" />
         </span>
         <div>
-          <h2>Un suivi distinct pour chaque banque</h2>
+          <h2>Les comptes bancaires de votre copropriété</h2>
           <p>
             Associez chaque banque à un compte comptable, puis choisissez-la
             lors des règlements. Les montants proviennent des écritures
@@ -164,6 +168,14 @@ export function Banking() {
           <Icon name="plus" size={17} />
           Ajouter un compte
         </button>
+      </div>
+      <div className="ops-actions">
+        <button className="button secondary" onClick={()=>setOpening(true)}>Renseigner les soldes de départ</button>
+        {onNavigate && <>
+          <button className="button secondary" onClick={()=>onNavigate("finance","payments")}>Enregistrer un paiement reçu</button>
+          <button className="button secondary" onClick={()=>onNavigate("accounting","expenses")}>Régler une facture</button>
+          <button className="button secondary" onClick={()=>onNavigate("finance","reconciliation")}>Vérifier avec les relevés bancaires</button>
+        </>}
       </div>
       <div className="ops-stats">
         <div>
@@ -296,6 +308,8 @@ export function Banking() {
                     <dt>Établissement</dt>
                     <dd>{b.bank_name || "À préciser"}</dd>
                   </div>
+                  <div><dt>Titulaire</dt><dd>{b.holder || "À préciser"}</dd></div>
+                  <div><dt>BIC</dt><dd>{b.bic || "Non renseigné"}</dd></div>
                   <div className="ops-full">
                     <dt>IBAN déclaré</dt>
                     <dd>{b.iban || "Non renseigné"}</dd>
@@ -309,6 +323,7 @@ export function Banking() {
               </div>
               <footer className="ops-card-footer">
                 <div className="ops-actions">
+                  <button className="button secondary" onClick={()=>setHistory(b)}>Voir les entrées et sorties</button>
                   <button
                     className="button secondary"
                     disabled={busy}
@@ -396,6 +411,8 @@ export function Banking() {
           )}
         </div>
       </section>
+      {history && <OperationsDialog title={`Entrées et sorties · ${history.name}`} busy={false} onClose={()=>setHistory(null)}><div className="ops-dialog-body"><BankMovements bankId={history.id} endDate={date}/></div></OperationsDialog>}
+      {opening && <OperationsDialog title="Soldes de départ et reprise comptable" busy={false} onClose={()=>{setOpening(false);void refresh().catch(e=>setError(e.message));}}><div className="ops-dialog-body"><p className="ops-muted">Le solde ne se modifie pas sur la fiche bancaire. Reprenez l’ensemble des soldes de départ dans une écriture équilibrée ; les paiements et dépenses feront ensuite évoluer chaque compte. Si une reprise existe déjà, ne la saisissez pas une deuxième fois.</p><AccountingCycle section="opening"/></div></OperationsDialog>}
       {editor && (
         <BankEditor
           key={

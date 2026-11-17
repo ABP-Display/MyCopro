@@ -90,6 +90,7 @@ export const categoryHelp: Record<
     "description": "Retrouvez ce qui a été reçu, ce qui a été payé et à quoi les sommes ont servi.",
     "advice": "Consultez les comptes, suivez les factures et préparez une fiche de rapport par mois ou trimestre. Les réglages comptables moins fréquents sont dans Opérations avancées.",
     "items": {
+        "banks": "Créez vos comptes bancaires, renseignez le titulaire et le RIB, puis suivez leurs soldes, entrées et sorties.",
         "history": "Historique des comptes, paiements, dépenses et pièces, consultable sans modifier les écritures.",
         "expenses": "Enregistrez les factures communes et leurs règlements.",
         "approvals": "Examinez et validez les dépenses soumises à avis.",

@@ -6,6 +6,12 @@ Le parcours conserve le thème actuel et les règles du moteur comptable. Il dis
 
 Dans **Charges & finances → Demander des charges → RIB de la copropriété**, renseigner le titulaire, l’IBAN et, si disponible, le BIC. Ces coordonnées servent aux avis individuels. Un IBAN doit être renseigné avant de préparer les nouveaux appels guidés et leurs PDF.
 
+Les comptes sont aussi accessibles directement dans **Gestion comptable → Comptes bancaires**. Créer une fiche par compte bancaire avec un code comptable 512 distinct (proposé automatiquement), un nom explicite, l’établissement, le titulaire et le RIB. Un compte comptable déjà utilisé peut être associé à sa banque sans déplacer ni recréer ses mouvements. Le compte par défaut sera proposé lors des règlements, tout en restant modifiable.
+
+**Voir les entrées et sorties** affiche une période au choix, le solde avant la période, les entrées, les sorties et le solde final. Les paiements identifiés indiquent la personne et les appels/lots explicitement affectés ; les règlements de factures conservent le fournisseur et le lien vers la pièce jointe. Les anciens mouvements non identifiés restent visibles avec leurs comptes de contrepartie. Les transferts entre comptes sont également conservés. Les reports de clôture ne comptent pas deux fois l’argent déjà présent dans l’historique.
+
+Pour reprendre des soldes bancaires existants lors du démarrage, utiliser **Renseigner les soldes de départ** : cette action ouvre la reprise comptable, qui doit comprendre les contreparties nécessaires pour équilibrer l’ensemble des soldes. Ne pas enregistrer un faux paiement de copropriétaire pour obtenir un solde bancaire. Un solde calculé ne remplace pas le contrôle avec les relevés de banque.
+
 ## 2. Partir du montant voté
 
 Cliquer sur **Créer des appels de charges**. Choisir un budget dont la décision a été enregistrée après signature du PV dans l’application, ou saisir la référence d’une AG réalisée à l’extérieur. Les budgets numériques proposent leur montant restant à appeler pour la répartition concernée : les appels déjà existants du même exercice sont pris en compte pour éviter de les appeler deux fois.
