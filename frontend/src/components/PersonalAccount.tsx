@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import {ResidentAccount} from "./ResidentAccounts";
 import { api } from "../api";
 import "./document-tools.css";
 
@@ -22,7 +23,7 @@ export function PersonalAccount() {
     return () => { active = false; };
   }, [query]);
   const exportUrl = (format: string) => `/api/operations/my-account/export/?${new URLSearchParams({ ...range, format })}`;
-  return <section className="panel ops-surface personal-account">
+  return <><ResidentAccount/><details className="resident-ledger-details"><summary>Voir mon historique comptable détaillé et les années précédentes</summary><section className="panel ops-surface personal-account">
     <div className="panel-heading">
       <div><h2>Mon compte copropriétaire</h2><p>Vos mouvements personnels restent privés.</p></div>
       {data && <div><small>Solde actuel</small><strong>{money(data.balance)}</strong></div>}
@@ -60,5 +61,5 @@ export function PersonalAccount() {
       </div>
       <p className="operations-note">{data.note} Les téléchargements couvrent toute la période sélectionnée, pas seulement la page affichée.</p>
     </>}
-  </section>;
+  </section></details></>;
 }

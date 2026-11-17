@@ -109,6 +109,9 @@ def item(request, pk):
     if set(data)-{"title", "folder", "published", "archived"}:raise ValueError("Champ inconnu.")
     with transaction.atomic():
         doc=Document.objects.select_for_update().get(pk=pk)
+        from finance.models import CallNotice
+        if data.get('published') is True and CallNotice.objects.filter(version__document=doc).exists():
+            raise ValueError('Les avis nominatifs restent privés. Chaque copropriétaire retrouve ses propres avis dans son compte.')
         for field in ["published", "archived"]:
             if field in data:
                 if not isinstance(data[field],bool):raise ValueError("Choix de partage ou archivage invalide.")

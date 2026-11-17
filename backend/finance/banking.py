@@ -19,7 +19,13 @@ class BankForm(forms.ModelForm):
     iban = forms.CharField(max_length=64, required=False)
     class Meta:
         model = BankAccount
-        fields = ['name', 'bank_name', 'iban', 'kind', 'active']
+        fields = ['name', 'bank_name', 'iban', 'holder', 'bic', 'kind', 'active']
+
+    def clean_bic(self):
+        bic = self.cleaned_data['bic'].strip().upper()
+        if bic and not re.fullmatch(r'[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?', bic):
+            raise forms.ValidationError('Le BIC comporte 8 ou 11 caractères.')
+        return bic
 
     def clean_iban(self):
         iban = ''.join(self.cleaned_data['iban'].split()).upper()
@@ -29,7 +35,7 @@ class BankForm(forms.ModelForm):
 
 
 def bank_data(bank, balance=None):
-    return {'id': bank.pk, 'name': bank.name, 'bank_name': bank.bank_name, 'iban': bank.iban,
+    return {'id': bank.pk, 'name': bank.name, 'bank_name': bank.bank_name, 'iban': bank.iban, 'holder':bank.holder, 'bic':bank.bic,
             'kind': bank.kind, 'active': bank.active, 'is_default': bank.is_default,
             'account_code': bank.account.code, 'account_active': bank.account.active,
             'balance': str(balance or Decimal(0))}

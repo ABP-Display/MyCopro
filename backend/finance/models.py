@@ -27,6 +27,8 @@ class Account(models.Model):
 
 
 class BankAccount(models.Model):
+    holder = models.CharField(max_length=150, blank=True)
+    bic = models.CharField(max_length=11, blank=True)
     name = models.CharField(max_length=150)
     bank_name = models.CharField(max_length=150, blank=True)
     iban = models.CharField(max_length=34, blank=True)
@@ -94,6 +96,8 @@ class Share(models.Model):
 
 
 class FundCall(models.Model):
+    source_decision = models.ForeignKey('governance.AssemblyDecision', on_delete=models.PROTECT, null=True, blank=True)
+    bank = models.ForeignKey(BankAccount, on_delete=models.PROTECT, null=True, blank=True)
     advance_type = models.CharField(max_length=12, default='reserve', choices=[('reserve','Réserve de trésorerie'),('ppt','Avance du PPT'),('temporary','Manque temporaire de trésorerie')])
     schedule = models.ForeignKey('CallSchedule', on_delete=models.PROTECT, null=True, blank=True)
     kind = models.CharField(max_length=12, default='current', choices=[('current','Budget courant'),('works','Travaux votés'),('fund','Fonds travaux'),('advance','Avance de trésorerie')])
@@ -160,6 +164,30 @@ class Receipt(models.Model):
     bank = models.ForeignKey(BankAccount, on_delete=models.PROTECT, null=True, blank=True)
     class Meta:
         constraints = [models.CheckConstraint(condition=models.Q(amount__gt=0), name="receipt_amount_positive")]
+
+
+class ReceiptAllocation(models.Model):
+    """Explicit attribution; owner stays on Receipt, permanent lot stays on Allocation."""
+    receipt = models.ForeignKey(Receipt, on_delete=models.PROTECT, related_name='lot_allocations')
+    allocation = models.ForeignKey(Allocation, on_delete=models.PROTECT, related_name='receipt_allocations')
+    settlement = models.ForeignKey('Settlement', on_delete=models.PROTECT, related_name='lot_links')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        constraints = [models.CheckConstraint(condition=models.Q(amount__gt=0), name='receipt_allocation_positive')]
+
+
+class CallNotice(models.Model):
+    call = models.ForeignKey(FundCall, on_delete=models.PROTECT, related_name='notices')
+    owner = models.ForeignKey(Owner, on_delete=models.PROTECT)
+    version = models.OneToOneField('documents.Version', on_delete=models.PROTECT)
+    snapshot = models.JSONField()
+    source_hash = models.CharField(max_length=64)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['call','owner','source_hash'],name='call_owner_notice_unique')]
 
 
 class BankTransfer(models.Model):

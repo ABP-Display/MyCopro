@@ -17,6 +17,7 @@ la vitrine et ses ressources.
 
 - [Les trois parcours quotidiens](guides/GESTION-QUOTIDIENNE.md)
 - [Installer la PWA, mobile et mise à jour](guides/PWA-MOBILE.md)
+- [Charges, paiements annuels, PDF et historique des lots](guides/CHARGES-PAIEMENTS-LOTS.md)
 - [Publication GitHub Pages](guides/GITHUB-PAGES.md)
 - [Architecture](guides/ARCHITECTURE.md)
 - [Six priorités quotidiennes : intranet, factures et modèles](guides/PRIORITES-QUOTIDIEN.md)

@@ -9,6 +9,8 @@ type Bank = {
   name: string;
   bank_name: string;
   iban: string;
+  holder: string;
+  bic: string;
   kind: string;
   active: boolean;
   is_default: boolean;
@@ -521,6 +523,8 @@ function BankEditor({
                     }
                   />
                 </label>
+                <label className="ops-field ops-full">Titulaire du compte<input name="holder" maxLength={150} defaultValue={item?.holder||""} /></label>
+                <label className="ops-field ops-full">BIC (facultatif)<input name="bic" maxLength={11} defaultValue={item?.bic||""} /></label>
                 <label className="ops-field ops-full">
                   IBAN (facultatif)
                   <input

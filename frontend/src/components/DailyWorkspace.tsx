@@ -8,6 +8,7 @@ import {Funding} from "./Funding";
 import {Operations} from "./Operations";
 const CouncilView=lazy(()=>import("./Council").then(m=>({default:m.Council})));
 function Council({section}:{section:string}){return <Suspense fallback={<p>Chargement…</p>}><CouncilView section={section}/></Suspense>;}
+import {ResidentPayments} from "./ResidentAccounts";
 import {Assemblies} from "./Assemblies";
 import "./daily-workspace.css";
 type Row=Record<string,any>;
@@ -15,17 +16,12 @@ const options=[{"value": "finance:keys", "title": "Charges et banques — Charge
 const money=(value:string)=>Number(value).toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
 export function DailyWorkspace({section,isAdmin}:{section:string;isAdmin:boolean}){
  const[choice,setChoice]=useState("accounting:opening"),[kind,setKind]=useState("journal");
- if(section==="payments")return <Payments/>;
+ if(section==="payments")return <ResidentPayments/>;
  if(section==="expenses")return <Finance manager section="expenses"/>;
  if(section==="history")return <><div className="daily-note"><p>Qui a payé, quelles factures ont été enregistrées et à quoi les dépenses correspondent : choisissez une vue de consultation.</p><label>Voir<select value={kind} onChange={e=>setKind(e.target.value)}><option value="journal">Historique des opérations</option><option value="auxiliary">Comptes des copropriétaires</option><option value="supplier-auxiliary">Comptes des fournisseurs</option><option value="budget">Dépenses par poste / budget</option><option value="consult">Justificatifs et comptes à consulter</option></select></label></div>{kind==="consult"?<Council section="accounts"/>:<AccountingReports key={kind} section={kind} simple/>}</>;
  if(section==="reports")return <><div className="daily-note"><label>Contenu de la fiche<select value={kind} onChange={e=>setKind(e.target.value)}><option value="journal">Opérations de la période</option><option value="budget">Dépenses par poste et budget annuel</option><option value="auxiliary">Situation des copropriétaires</option></select></label><p>Choisissez un mois ou un trimestre, puis calculez la fiche. Les budgets comparés restent annuels.</p></div><AccountingReports key={kind} section={kind} simple/></>;
  const[page,child]=choice.split(":");
  return <><div className="daily-note"><h2>Opérations moins fréquentes</h2><p>Ces outils conservent les réglages et contrôles comptables. Utilisez-les pour le démarrage, les corrections ou la fin d’exercice.</p><label>Opération<select value={choice} onChange={e=>setChoice(e.target.value)}>{options.map(o=><option key={o.value} value={o.value}>{o.title}</option>)}</select></label></div><div key={choice}>{page==="reporting"?(["annexes","aged"].includes(child)?<AccountingCycle section={child}/>:<AccountingReports section={child}/>):page==="finance"?(child==="banks"?<Banking/>:child==="funding"?<Funding/>:child==="reminders"?<Operations section="reminders"/>:["reconciliation","funds"].includes(child)?<AccountingCycle section={child}/>:<Finance manager section={child}/>):child==="approvals"||child==="consult-accounts"?<Council section={child==="approvals"?"approvals":"accounts"}/>: ["opening","allocation","lettering","closing","corrections","mutations"].includes(child)?<AccountingCycle section={child}/>:child==="posting"?<Finance manager section="entries"/>:<Accounting section={child} isAdmin={isAdmin}/>}</div></>;
-}
-function Payments(){const[years,setYears]=useState<Row[]>([]),[year,setYear]=useState(""),[rows,setRows]=useState<Row[]>([]),[error,setError]=useState(""),[revision,setRevision]=useState(0);
- useEffect(()=>{api<Row>("finance/years").then(d=>{setYears(d.items);setYear(String(d.items.find((y:Row)=>!y.closed)?.id||d.items[0]?.id||""));}).catch(e=>setError(e.message));},[]);
- useEffect(()=>{if(!year)return;let live=true;setRows([]);api<Row>(`finance/reporting/auxiliary?year=${year}`).then(d=>{if(live){setRows(d.rows);setError("");}}).catch(e=>{if(live)setError(e.message);});return()=>{live=false;};},[year,revision]);
- return <><Finance manager section="treasury" compact onRecorded={()=>setRevision(v=>v+1)}/><section className="panel daily-note"><h2>Situation des copropriétaires</h2><label>Exercice<select value={year} onChange={e=>setYear(e.target.value)}>{years.map(y=><option key={y.id} value={y.id}>{y.name}</option>)}</select></label><p>Solde net des écritures de l’exercice choisi, incluant les reports enregistrés. Un montant restant dû ne prouve pas à lui seul un retard. Une correction peut aussi modifier ce solde.</p>{error&&<p role="alert" className="alert">{error}</p>}<div className="daily-table"><table><thead><tr><th>Copropriétaire</th><th>Situation</th><th>Montant</th></tr></thead><tbody>{rows.map((r,i)=><tr key={i}><td>{r.owner||"Non attribué"}</td><td>{Number(r.balance)>0?"Reste à recevoir":Number(r.balance)<0?"Avance disponible":"Compte soldé"}</td><td>{money(String(Math.abs(Number(r.balance))))}</td></tr>)}</tbody></table></div>{!rows.length&&!error&&<p>Aucun mouvement à afficher pour cet exercice.</p>}</section></>;
 }
 export function GuidedAssembly({section,onGuide}:{section:string;onGuide:()=>void}){
  const[step,setStep]=useState(section==="run"?"session":section==="follow"?"minutes":"agenda"),[intent,setIntent]=useState<{id:number;type:string}|null>(null);

@@ -17,6 +17,8 @@ La navigation quotidienne est maintenant centrée sur **Charges & finances**, **
 
 L’application est également **installable en PWA** et adaptée au mobile. La version `AAAA.MM.JJ.HHMM`, affichée en bas de page, ouvre une confirmation de rechargement. La fenêtre de sécurité sépare mot de passe et double authentification. Voir le [guide PWA et mobile](docs/guides/PWA-MOBILE.md) pour l’installation HTTPS et les limites hors connexion.
 
+Le [parcours charges, paiements et lots](docs/guides/CHARGES-PAIEMENTS-LOTS.md) relie désormais budget d’AG, appels avec aperçu, avis PDF privés avec RIB et paiements affectés à chaque appel/lot. Chaque copropriétaire retrouve ses versements par année et ses anciens relevés ; l’historique permanent du lot conserve les changements de propriétaire sans déplacer les versements antérieurs.
+
 ## Fonctionnalités disponibles
 
 | Thème | Ce que permet l’application |

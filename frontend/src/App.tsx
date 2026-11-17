@@ -30,6 +30,7 @@ import { AccountingCycle } from "./components/AccountingCycle";
 import { Funding } from "./components/Funding";
 import { Documents } from "./components/Documents";
 import { Assemblies } from "./components/Assemblies";
+import { ResidentCharges, LotHistory } from "./components/ResidentAccounts";
 import { DailyWorkspace, GuidedAssembly } from "./components/DailyWorkspace";
 import { Tools } from "./components/Tools";
 import { CategoryOverview, categoryHelp } from "./components/CategoryOverview";
@@ -102,6 +103,7 @@ function Application() {
   }, [user]);
   const [owners, setOwners] = useState<Owner[]>([]);
   const [lots, setLots] = useState<Lot[]>([]);
+  const [historyLot,setHistoryLot]=useState<Lot|null>(null);
   const [stats, setStats] = useState<Overview | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -303,6 +305,8 @@ function Application() {
               isAdmin={!!user.is_admin}
               onNavigate={(child) => navigate(page, child)}
             />
+          ) : page === "finance" && section === "calls" ? (
+            <ResidentCharges />
           ) : page === "accounting" && ["history","expenses","reports","advanced"].includes(section) ? (
             <DailyWorkspace key={section} section={section} isAdmin={!!user.is_admin} />
           ) : page === "finance" && section === "payments" ? (
@@ -691,6 +695,7 @@ function Application() {
                               <Icon name="edit" size={16} />
                               Modifier
                             </button>
+                            <button className="edit-button" aria-label={`Historique du lot ${l.number}`} onClick={()=>setHistoryLot(l)}>Historique et vente</button>
                           </td>
                         </tr>
                       ))}
@@ -721,6 +726,7 @@ function Application() {
           </footer>
         </main>
       </div>
+      {historyLot&&<LotHistory lot={historyLot} onClose={()=>setHistoryLot(null)} onChanged={()=>void load()}/>}
       {editor && (
         <Editor
           key={`${editor.type}-${editor.item?.id || "new"}`}

@@ -977,6 +977,9 @@ input::placeholder {
   color: #8d9a7f;
   font-size: 13px;
 }
+.directory-panel th {
+  position: relative;
+}
 .sr-only {
   position: absolute;
   width: 1px;

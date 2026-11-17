@@ -28,7 +28,7 @@ class LotForm(ModelForm):
         if self.instance.pk and self.instance.owner_id and self.instance.owner_id!=getattr(owner,'pk',None):
             from finance.models import Allocation, ChargeAllocation, Line, OwnershipChange
             if Allocation.objects.filter(lot=self.instance).exists() or ChargeAllocation.objects.filter(lot=self.instance).exists() or Line.objects.filter(owner_id=self.instance.owner_id).exists() or OwnershipChange.objects.filter(lot=self.instance).exists():
-                raise ValidationError('Utilisez Gestion comptable → Mutations pour conserver la date, les comptes et l’historique du changement de propriétaire.')
+                raise ValidationError('Utilisez Lots → Historique et vente pour conserver la date, les comptes et l’historique du changement de propriétaire.')
         return owner
     class Meta:
         model = Lot
