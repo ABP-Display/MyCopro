@@ -26,6 +26,8 @@ Les copropriétaires consultent toutes ces rubriques et utilisent les simulateur
 
 Voir le [guide quotidien](docs/UTILISATION.md). La PWA reste disponible sous HTTPS ou sur localhost. Les fichiers privés et les réponses API ne sont pas conservés dans le cache hors connexion. La version `AAAA.MM.JJ.HHMM` en bas de page permet de demander un rechargement.
 
+La [vitrine de présentation](docs/index.html) est un site statique autonome dans `docs/`, avec présentation des fonctionnalités, rôles, installation et liens vers **https://copro.ydoxide.fr**. Voir [sa publication sur GitHub Pages](docs/README.md).
+
 ## Ancienne version et données
 
 L’application précédente, sa documentation et ses références sont conservées dans [`old_version/`](old_version/README-ARCHIVE.md), avec le commit source indiqué dans `ARCHIVED_COMMIT.txt`.
