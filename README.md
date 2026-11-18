@@ -11,6 +11,8 @@ Une application pour un syndic bénévole ou coopératif, en React, Django et Po
 
 Les copropriétaires consultent toutes ces rubriques et utilisent les simulateurs. Les écritures, publications, modifications et validations sont réservées aux administrateurs, avec contrôle côté serveur. **Administration** n’apparaît que pour eux : coordonnées, catégories, rôles et historique. Chacun peut modifier son propre mot de passe.
 
+**Mon compte & sécurité** regroupe le changement de mot de passe et l’A2F facultative : QR code ou clé manuelle TOTP, confirmation du premier code, date d’activation et huit codes de secours à usage unique. La désactivation exige le mot de passe et un code valide. Les clés sont chiffrées dans la base ; les codes déjà utilisés sont refusés. Conservez `DJANGO_SECRET_KEY` avec votre configuration privée pour pouvoir restaurer les clés A2F.
+
 ## Démarrer
 
 1. Copier `.env.example` vers `.env` et renseigner des secrets robustes. Le mot de passe administrateur doit contenir au moins 12 caractères.
@@ -30,7 +32,7 @@ Ne lancez pas `docker compose down -v` pour une simple mise à jour. Les sauvega
 
 ## Portée de cette nouvelle base
 
-Il s’agit d’un **suivi de trésorerie simple**, et non de toute l’ancienne comptabilité réglementaire. Les annexes réglementaires, la gestion complète des AG, la double authentification, les avis PDF automatiques et l’ancien système de restauration vérifiée restent dans l’archive ; ils ne sont pas annoncés comme disponibles dans cette nouvelle base. Les décisions et règles de répartition doivent être vérifiées avant création des appels. Les montants versés et les sommes appelées sont conservés séparément, sans considérer un appel comme de l’argent encaissé.
+Il s’agit d’un **suivi de trésorerie simple**, et non de toute l’ancienne comptabilité réglementaire. Les annexes réglementaires, la gestion complète des AG, les avis PDF automatiques et l’ancien système de restauration vérifiée restent dans l’archive ; ils ne sont pas annoncés comme disponibles dans cette nouvelle base. Les décisions et règles de répartition doivent être vérifiées avant création des appels. Les montants versés et les sommes appelées sont conservés séparément, sans considérer un appel comme de l’argent encaissé.
 
 ## Développement et vérifications
 

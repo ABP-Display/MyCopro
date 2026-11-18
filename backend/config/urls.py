@@ -1,7 +1,10 @@
 from django.urls import path
-from copro import views
+from copro import views, security
 
 urlpatterns = [
+    path('api/security/',security.information),path('api/security/setup/',security.setup),
+    path('api/security/confirm/',security.confirm),path('api/security/disable/',security.disable),
+    path('api/login/verify/',security.verify_login),
     path('api/ag/electorate/',views.electorate),path('api/ag/tools/<str:kind>/',views.tools),
     path('api/health/',views.health),path('api/session/',views.session),
     path('api/login/',views.login),path('api/logout/',views.logout),path('api/password/',views.password),

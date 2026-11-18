@@ -36,6 +36,20 @@ Le bouton Modifier la publication permet de corriger le titre, le texte ou la ca
 
 Les administrateurs personnalisent les catégories dans Administration : Travaux, Assurance, Trésorerie, ou tout autre sujet utile. Huit pièces jointes de 10 Mo maximum sont acceptées par publication ; la limite totale d’une requête est 12 Mo. Les téléchargements restent protégés par la connexion. Il n’y a pas d’envoi d’e-mail ni de modification collaborative des pièces.
 
+## Mon compte, A2F et mises à jour
+
+**Mon compte** permet de modifier le mot de passe en saisissant le mot de passe actuel, le nouveau et sa confirmation. Avec l’A2F activée, un code de l’application ou de secours est aussi demandé. Les autres sessions sont invalidées après un changement de mot de passe.
+
+Pour activer l’A2F, confirmez votre mot de passe puis scannez le QR code dans Google Authenticator ou une application TOTP. Vous pouvez aussi saisir la clé affichée en choisissant le mode basé sur l’heure : six chiffres, renouvelés toutes les 30 secondes. La préparation est horodatée et expire après dix minutes. Saisissez le premier code pour confirmer : la protection ne s’active qu’après cette vérification. L’heure automatique doit être activée sur le téléphone et sur le serveur.
+
+Huit codes de secours sont alors affichés une seule fois. Téléchargez-les et conservez-les en lieu sûr, séparément du téléphone. Chacun remplace un code de l’application pour une seule utilisation. Le code employé pour l’activation est déjà consommé : pour une action immédiate, attendez le code suivant ou utilisez un code de secours. La date d’activation et le nombre de codes de secours restants sont visibles dans Mon compte. Les anciennes sessions doivent se reconnecter avec l’A2F.
+
+À la prochaine connexion, le mot de passe est vérifié avant de demander le code A2F. Cette deuxième étape expire après cinq minutes. Cinq codes incorrects imposent une attente de cinq minutes. Pour désactiver la protection, confirmez le mot de passe et un code de l’application ou de secours ; les anciennes clés et les codes de secours sont ensuite supprimés. L’activation ou la désactivation concerne uniquement votre propre compte.
+
+Utilisez HTTPS pour accéder à votre instance depuis le réseau. Les clés A2F sont chiffrées avec une clé dérivée de `DJANGO_SECRET_KEY` : sauvegardez aussi votre configuration `.env` dans un emplacement privé distinct des archives. La sauvegarde de la base seule ne suffit pas à récupérer ces clés si ce secret est perdu. Références techniques : [PyOTP](https://pyauth.github.io/pyotp/) et [sessions Django](https://docs.djangoproject.com/en/5.2/topics/auth/default/).
+
+Le bouton de version ouvre une fenêtre indiquant la version affichée et celle du serveur. Après avoir enregistré les formulaires en cours, cliquez sur Recharger l’application. Le rechargement conserve les données déjà enregistrées.
+
 ## Outils et téléphone
 
 Les outils sont accessibles à tous : ils calculent sans enregistrer d’opération. La liste des copropriétaires peut préremplir les calculs. Le simulateur de majorité ne remplace ni le choix de la majorité applicable ni le procès-verbal d’une AG.

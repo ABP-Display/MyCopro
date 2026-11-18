@@ -27,9 +27,10 @@ def csrf_failure(request, reason=''):
 
 
 def user_data(user):
+    from .security import status
     owner = Owner.objects.filter(user=user).first()
     return {'id':user.pk, 'name':str(owner) if owner else user.get_full_name() or user.username,
-            'admin':user.is_staff or user.is_superuser, 'owner':owner.pk if owner else None}
+            'admin':user.is_staff or user.is_superuser, 'owner':owner.pk if owner else None, **status(user)}
 
 
 def guarded(admin=False, methods=('GET',), readonly=False):
@@ -137,6 +138,9 @@ def login(request):
             attempt.save()
         if user is None:
             return JsonResponse({'error':'Identifiant ou mot de passe incorrect.'},status=401)
+        from .security import begin_login
+        challenge=begin_login(request,user)
+        if challenge is not None:return challenge
         auth_login(request,user)
         return JsonResponse({'user':user_data(user),'csrf':get_token(request)})
     except (ValueError, TypeError, KeyError):
@@ -151,18 +155,8 @@ def logout(request):
 
 @require_http_methods(['POST'])
 def password(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({'error':'Connexion nécessaire.'},status=401)
-    try:
-        data=payload(request)
-        if not request.user.check_password(data.get('current','')):
-            raise ValueError('Le mot de passe actuel est incorrect.')
-        validate_password(data.get('password',''),request.user)
-        request.user.set_password(data['password']);request.user.save(update_fields=['password'])
-        update_session_auth_hash(request,request.user)
-        return JsonResponse({'ok':True})
-    except (ValueError, ValidationError, TypeError) as error:
-        return JsonResponse({'error':' · '.join(error.messages) if isinstance(error,ValidationError) else str(error)},status=400)
+    from .security import change_password
+    return change_password(request)
 
 
 def bank_data(bank):

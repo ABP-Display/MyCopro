@@ -161,3 +161,16 @@ class LoginAttempt(models.Model):
     key = models.CharField(max_length=64, unique=True)
     count = models.PositiveIntegerField(default=0)
     since = models.DateTimeField()
+
+
+class MFA(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    secret = models.TextField(blank=True)
+    pending_secret = models.TextField(blank=True)
+    pending_at = models.DateTimeField(null=True)
+    enabled_at = models.DateTimeField(null=True)
+    last_counter = models.BigIntegerField(default=-1)
+    recovery_hashes = models.JSONField(default=list)
+    generation = models.UUIDField(default=uuid.uuid4)
+    failures = models.PositiveSmallIntegerField(default=0)
+    locked_until = models.DateTimeField(null=True)

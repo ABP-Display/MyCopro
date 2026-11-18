@@ -5,10 +5,10 @@ export const money=(value:string|number)=>Number(value||0).toLocaleString('fr-FR
 export const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Paris'});
 export const dateLabel=(value:string)=>new Date(`${value.slice(0,10)}T12:00:00`).toLocaleDateString('fr-FR');
 export function Empty({children}:{children:ReactNode}){return <p className="s-empty">{children}</p>;}
-export function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}){
+export function Modal({title,onClose,children,busy=false}:{title:string;onClose:()=>void;children:ReactNode;busy?:boolean}){
  const dialog=useRef<HTMLDialogElement>(null);
  useEffect(()=>{dialog.current?.showModal();return()=>dialog.current?.close();},[]);
- return <dialog ref={dialog} className="s-dialog" aria-label={title} onCancel={e=>{e.preventDefault();onClose();}}><header><h2>{title}</h2><button className="button secondary" onClick={onClose}>Fermer</button></header><div className="s-dialog-body">{children}</div></dialog>;
+ return <dialog ref={dialog} className="s-dialog" aria-label={title} onCancel={e=>{e.preventDefault();if(!busy)onClose();}}><header><h2>{title}</h2><button className="button secondary" disabled={busy} onClick={onClose}>Fermer</button></header><div className="s-dialog-body">{children}</div></dialog>;
 }
 export type Field={key:string;label:string;type?:string;required?:boolean;options?:Row[];readonly?:boolean;max?:number;help?:string};
 export function Fields({fields,value,setValue}:{fields:Field[];value:Row;setValue:(value:Row)=>void}){
