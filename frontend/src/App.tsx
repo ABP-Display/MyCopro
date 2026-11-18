@@ -10,6 +10,7 @@ import {Administration} from './components/Administration';
 import {Metrics,money,today,type Row} from './components/Common';
 import {AccountSecurity} from './components/AccountSecurity';
 import {UpdateDialog} from './components/UpdateDialog';
+import {InstallPwa} from './components/InstallPwa';
 import {registerAppWorker} from './pwa';
 
 const groups=[
@@ -48,7 +49,7 @@ export function App(){
    <div className="s-user"><span className="s-avatar">{user.name.slice(0,2).toUpperCase()}</span><div><strong>{user.name}</strong><small>{user.admin?'Administrateur':'Consultation'}</small></div><button title="Se déconnecter" aria-label="Se déconnecter" onClick={async()=>{try{await api('logout','POST',{});setUser(null);setPage('overview');}catch(e){setError((e as Error).message);}}}><Icon name="logout" size={18}/></button></div>
    <button className="s-collapse" aria-label={compact?'Développer le menu':'Réduire le menu'} onClick={()=>setCompact(c=>{localStorage.setItem('copro-simple-compact',c?'0':'1');return !c;})}>{compact?'›':'‹'}</button>
   </aside>
-  <div className="s-content" inert={smallScreen&&mobile}><header className="s-top"><button ref={menuButton} className="button secondary s-mobile-menu" onClick={()=>setMobile(true)} aria-label="Ouvrir le menu" aria-expanded={mobile}><Icon name="menu"/></button><span><span className="s-top-building">{data?.building.name||'Copro.'}</span><i>/</i><span className="s-top-page">{title}</span></span><button className="button secondary" onClick={()=>setAccount(true)}><Icon name="shield" size={15}/>Mon compte</button></header>
+  <div className="s-content" inert={smallScreen&&mobile}><header className="s-top"><button ref={menuButton} className="button secondary s-mobile-menu" onClick={()=>setMobile(true)} aria-label="Ouvrir le menu" aria-expanded={mobile}><Icon name="menu"/></button><span><span className="s-top-building">{data?.building.name||'Copro.'}</span><i>/</i><span className="s-top-page">{title}</span></span><InstallPwa/><button className="button secondary" onClick={()=>setAccount(true)}><Icon name="shield" size={15}/>Mon compte</button></header>
    <main><div className="s-heading"><p className="eyebrow">LA COPROPRIÉTÉ, ENSEMBLE</p><h1>{title}</h1><p>{descriptions[page]}</p>{!user.admin&&<span className="s-readonly">Consultation · les modifications sont réservées aux administrateurs</span>}</div>
     {error&&<div className="alert" role="alert">{error}<button className="button secondary" onClick={()=>void load()}>Réessayer</button></div>}
     {!data?<p role="status">Chargement des informations…</p>:page==='overview'?<Overview data={data} user={user} go={go}/>:['owners','lots'].includes(page)?<Building key={page} section={page} data={data} admin={user.admin} onChange={load}/>:['banks','charges','funds','payments'].includes(page)?<Finance key={page} section={page} data={data} admin={user.admin} onChange={load} user={user}/>:page==='feed'?<Feed data={data} admin={user.admin}/>:['split','installments','vote'].includes(page)?<div className="s-card s-pad"><Tools key={page} section={page}/></div>:page==='admin'&&user.admin?<Administration data={data} onChange={load}/>:null}
