@@ -1,7 +1,10 @@
 from django.urls import path
-from copro import views, security
+from copro import views, security, dossiers
 
 urlpatterns = [
+    path('api/dossiers/<str:kind>/<int:pk>/',dossiers.dossier),
+    path('api/transfers/<str:action>/',dossiers.transfer),
+    path('api/posts/<int:pk>/reply/',dossiers.respond),path('api/posts/<int:pk>/close/',dossiers.close),
     path('api/security/',security.information),path('api/security/setup/',security.setup),
     path('api/security/confirm/',security.confirm),path('api/security/disable/',security.disable),
     path('api/login/verify/',security.verify_login),

@@ -90,12 +90,12 @@ def verified(request,item):
     request.session['mfa_generation']=str(item.generation)
 
 
-@guarded(readonly=True,methods=('GET',))
+@guarded(allow_former=True,readonly=True,methods=('GET',))
 def information(request):
     return JsonResponse({'user':user_data(request.user),**status(request.user)})
 
 
-@guarded(readonly=True,methods=('POST',))
+@guarded(allow_former=True,readonly=True,methods=('POST',))
 def setup(request):
     data=payload(request)
     with transaction.atomic():
@@ -116,7 +116,7 @@ def setup(request):
                              'created_at':item.pending_at.isoformat(),'expires_at':(item.pending_at+timedelta(minutes=10)).isoformat()})
 
 
-@guarded(readonly=True,methods=('POST',))
+@guarded(allow_former=True,readonly=True,methods=('POST',))
 def confirm(request):
     data=payload(request)
     with transaction.atomic():
@@ -136,7 +136,7 @@ def confirm(request):
         return JsonResponse({**status(request.user),'recovery_codes':codes,'user':user_data(request.user)})
 
 
-@guarded(readonly=True,methods=('POST',))
+@guarded(allow_former=True,readonly=True,methods=('POST',))
 def disable(request):
     data=payload(request)
     with transaction.atomic():
@@ -185,7 +185,7 @@ def verify_login(request):
         return JsonResponse({'error':'Connexion invalide ou expirée. Recommencez.'},status=401)
 
 
-@guarded(readonly=True,methods=('POST',))
+@guarded(allow_former=True,readonly=True,methods=('POST',))
 def change_password(request):
     data=payload(request)
     validate_password(data.get('password',''),request.user)

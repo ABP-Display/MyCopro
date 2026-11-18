@@ -40,6 +40,9 @@ class Ownership(models.Model):
     owner = models.ForeignKey(Owner, on_delete=models.PROTECT, related_name='+', null=True)
     date = models.DateField()
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    reference = models.CharField(max_length=250, blank=True)
+    previous_name = models.CharField(max_length=201, blank=True)
+    owner_name = models.CharField(max_length=201, blank=True)
 
 
 class Bank(models.Model):
@@ -106,6 +109,14 @@ class Category(models.Model):
 
 
 class Post(models.Model):
+    scope = models.CharField(max_length=10, default='copro', choices=[('copro','Copropriété'),('lot','Technique du lot'),('owner','Personnel')])
+    lot = models.ForeignKey(Lot, on_delete=models.PROTECT, null=True, blank=True)
+    recipient = models.ForeignKey(Owner, on_delete=models.PROTECT, null=True, blank=True, related_name='personal_posts')
+    recipient_name = models.CharField(max_length=201, blank=True)
+    lot_number = models.CharField(max_length=30, blank=True)
+    kind = models.CharField(max_length=10, default='info', choices=[('info','Information / document'),('call','Appel de charges'),('request','Demande de renseignement')])
+    status = models.CharField(max_length=10, default='open', choices=[('open','En cours'),('answered','Réponse reçue'),('closed','Clôturé')])
+    due_on = models.DateField(null=True, blank=True)
     title = models.CharField(max_length=150)
     text = models.TextField(max_length=15000)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
@@ -121,7 +132,19 @@ def attachment_path(instance, filename):
     return f'attachments/{uuid.uuid4().hex}'
 
 
+class Reply(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.PROTECT, related_name='replies')
+    owner = models.ForeignKey(Owner, on_delete=models.PROTECT)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    text = models.TextField(max_length=15000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at','id']
+
+
 class Attachment(models.Model):
+    reply = models.ForeignKey(Reply, on_delete=models.PROTECT, null=True, blank=True, related_name='attachments')
     post = models.ForeignKey(Post, on_delete=models.PROTECT, related_name='attachments')
     file = models.FileField(upload_to=attachment_path)
     name = models.CharField(max_length=200)

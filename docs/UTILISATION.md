@@ -65,3 +65,14 @@ Sur téléphone, utilisez le bouton de menu en haut. La version en bas de page p
 L’icône de téléchargement à côté de Mon compte permet d’installer Copro. Le navigateur ouvre sa fenêtre d’installation lorsqu’elle est disponible ; sinon, des indications expliquent comment ajouter l’application depuis son menu (sur iPhone/iPad : Safari → Partager → Sur l’écran d’accueil). L’icône disparaît dans l’application déjà ouverte en mode installé. Il n’y a pas de fichier APK à télécharger.
 
 La connexion adopte un bandeau compact sur petit écran pour laisser le formulaire accessible. Les listes de copropriétaires, lots, paiements et mouvements sont des cartes avec leurs libellés, en grille sur ordinateur et empilées sur téléphone. Le menu s’ouvre au-dessus du contenu, possède un bouton Fermer et conserve son défilement propre. Les formulaires longs défilent sous leur en-tête, avec un espace adapté à la hauteur visible. Les champs tactiles évitent le zoom automatique de saisie sans désactiver le zoom manuel.
+
+## Documents individuels et départ d’un copropriétaire
+
+1. Dans **Gestion immeuble**, cliquez sur un nom ou sur un numéro de lot pour ouvrir son dossier. Un membre peut aussi ouvrir **Mes documents et demandes** depuis la vue d’ensemble.
+2. Administrateur : cliquez sur **Publier une information**, choisissez la visibilité. Réservez « Technique du lot » aux plans, notices et pièces transmissibles. Choisissez « Personnel » pour un appel de charges PDF, un courrier nominatif ou une demande de relevé.
+3. Pour une demande, choisissez son destinataire et éventuellement une échéance. Le destinataire utilise **Répondre** pour joindre son relevé et ses justificatifs. L’administrateur peut ensuite **Clôturer la demande**. Les réponses sont conservées.
+4. Avant une vente, créez le compte du nouveau propriétaire. Dans le dossier d’un lot, cliquez sur **Transmettre des lots** ; sélectionnez tous les lots concernés, la date effective (pas de date future) et la référence de l’acte ou de la passation. Vérifiez l’aperçu, puis confirmez.
+5. Le nouvel arrivant voit les pièces techniques des lots, mais pas les appels et réponses personnels du vendeur. Les paiements et appels passés gardent leur rattachement d’origine. Aucun solde ni dette n’est transféré automatiquement.
+6. Après son dernier lot, le vendeur sans rôle administrateur se connecte à ses seules archives personnelles. Pour conserver cet accès, ne désactivez pas son compte. Vérifiez séparément les droits administrateur dans **Administration**.
+
+Une publication conserve son type, son lot et son destinataire après création : pour une autre destination, créez une nouvelle publication. Les pièces déposées sont conservées lors de l’édition. Les documents communs du fil restent partagés avec les membres actuels.

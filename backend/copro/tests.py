@@ -73,7 +73,10 @@ class SimpleCoproTests(TestCase):
         self.assertEqual(sum(Call.objects.values_list('amount',flat=True)),Decimal('100.01'))
         self.assertEqual(sum(Allocation.objects.values_list('amount',flat=True)),Decimal('100.01'))
         old_owner=call.allocations.get(lot=self.lot).owner
-        r=self.send(f'lots/{self.lot.pk}',{'number':'A1','shares':'120','owner':self.other.pk})
+        self.other.user=get_user_model().objects.create_user('bob@example.test');self.other.save()
+        data={'lots':[self.lot.pk],'owner':self.other.pk,'date':'2026-11-17','reference':'Vente test'}
+        preview=self.send('transfers/preview',data).json()
+        r=self.send('transfers/confirm',{**data,'hash':preview['hash']})
         self.assertEqual(r.status_code,200,r.content)
         self.assertEqual(call.allocations.get(lot=self.lot).owner,old_owner)
         self.assertEqual(Ownership.objects.get().previous,self.owner)
@@ -191,3 +194,55 @@ class SimpleCoproTests(TestCase):
         self.assertEqual(self.send(f'owners/{self.owner.pk}/reset-access',{'password':chosen}).status_code,400)
         mine=Owner.objects.create(first_name='Admin',last_name='Test',email='admin@example.test',user=self.admin)
         self.assertEqual(self.send(f'owners/{mine.pk}/reset-access',{'password':chosen}).status_code,400)
+
+    def test_dossier_privacy_and_transfer_archives(self):
+        call=self.call();self.payment(call)
+        before=(list(Allocation.objects.values()),list(Payment.objects.values()))
+        self.other.user=get_user_model().objects.create_user('bob@example.test');self.other.save()
+        buyer=Client();buyer.force_login(self.other.user)
+        technical=Post.objects.create(scope='lot',lot=self.lot,title='Technique',text='Plan',category=self.category,author=self.admin)
+        private=Post.objects.create(scope='owner',lot=self.lot,recipient=self.owner,recipient_name=str(self.owner),kind='request',title='Compteur',text='Relevé',category=self.category,author=self.admin)
+        file=Attachment.objects.create(post=private,name='prive.txt',size=6,file=SimpleUploadedFile('prive.txt',b'secret'))
+        self.assertEqual(buyer.get(f'/api/attachments/{file.pk}/').status_code,404)
+        self.assertEqual(buyer.get(f'/api/dossiers/lots/{self.lot.pk}/').status_code,404)
+        response=self.member.post(f'/api/posts/{private.pk}/reply/',{'text':'123 m3'})
+        self.assertEqual(response.status_code,200,response.content)
+        self.assertEqual(buyer.post(f'/api/posts/{private.pk}/reply/',{'text':'intrusion'}).status_code,404)
+        second=Lot.objects.create(number='A2',owner=self.owner,shares=20)
+        data={'lots':[self.lot.pk,second.pk],'owner':self.other.pk,'date':'2026-11-17','reference':'Acte de vente'}
+        preview=self.send('transfers/preview',data).json()
+        self.assertEqual(self.send('transfers/confirm',{**data,'hash':'obsolete'}).status_code,400)
+        token=str(uuid4());body={**data,'hash':preview['hash'],'request_id':token}
+        self.assertEqual(self.send('transfers/confirm',body).status_code,200)
+        self.assertEqual(self.send('transfers/confirm',body).status_code,200)
+        self.assertEqual(Ownership.objects.count(),2)
+        self.assertEqual(before,(list(Allocation.objects.values()),list(Payment.objects.values())))
+        private.refresh_from_db();self.assertEqual(private.status,'closed')
+        self.assertTrue(self.member.get('/api/session/').json()['user']['former_owner'])
+        self.assertEqual(self.member.get('/api/state/').status_code,403)
+        self.assertEqual(self.member.get('/api/security/').status_code,200)
+        self.assertEqual(self.member.get(f'/api/dossiers/owners/{self.owner.pk}/').status_code,200)
+        self.assertEqual(self.member.get(f'/api/attachments/{file.pk}/').status_code,200)
+        self.assertEqual(self.member.get(f'/api/dossiers/lots/{self.lot.pk}/').status_code,404)
+        items=buyer.get(f'/api/posts/?lot={self.lot.pk}').json()['items']
+        self.assertEqual([p['id'] for p in items],[technical.pk])
+        self.assertEqual(buyer.get(f'/api/attachments/{file.pk}/').status_code,404)
+        self.assertEqual(file.file.read(),b'secret')
+        from .permissions import owner_at
+        self.lot.refresh_from_db()
+        self.assertEqual(owner_at(self.lot,date(2026,1,1)),self.owner)
+
+    def test_private_publication_validation_and_recipient_lock(self):
+        body={'scope':'owner','recipient':self.owner.pk,'lot':self.lot.pk,'kind':'request','category':self.category.pk,'title':'Relevé eau','text':'Merci de communiquer votre index','due_on':'2026-12-01','files':SimpleUploadedFile('releve.pdf',b'%PDF-demo')}
+        r=self.client.post('/api/posts/',body)
+        self.assertEqual(r.status_code,200,r.content)
+        post=Post.objects.get(pk=r.json()['id'])
+        self.assertEqual(post.recipient_name,str(self.owner))
+        self.assertEqual(len(self.member.get(f'/api/posts/?owner={self.owner.pk}').json()['items']),1)
+        self.assertEqual(self.member.get('/api/posts/').json()['items'],[])
+        change={k:v for k,v in body.items() if k!='files'};change['recipient']=self.other.pk
+        self.assertEqual(self.client.post(f'/api/posts/{post.pk}/',change).status_code,400)
+        post.refresh_from_db();self.assertEqual(post.recipient,self.owner)
+        self.assertEqual(self.member.post('/api/posts/',change).status_code,403)
+        change['scope']='lot';change['recipient']=''
+        self.assertEqual(self.client.post('/api/posts/',change).status_code,400)

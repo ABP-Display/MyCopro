@@ -4,6 +4,7 @@ import {BrandMark} from './components/BrandMark';
 import {Icon,BuildingIllustration} from './components/ui';
 import {Building} from './components/Building';
 import {Finance} from './components/Finance';
+import {Dossier} from './components/Dossier';
 import {Feed} from './components/Feed';
 import {Tools} from './components/Tools';
 import {Administration} from './components/Administration';
@@ -28,17 +29,19 @@ export function App(){
  const menuButton=useRef<HTMLButtonElement>(null),sidebar=useRef<HTMLElement>(null);
  useEffect(()=>{const query=matchMedia('(max-width:900px)');const update=()=>{setSmallScreen(query.matches);if(!query.matches)setMobile(false);};query.addEventListener('change',update);return()=>query.removeEventListener('change',update);},[]);
  useEffect(()=>{const viewport=window.visualViewport;const update=()=>{document.documentElement.style.setProperty('--visible-height',`${viewport?.height||innerHeight}px`);document.documentElement.style.setProperty('--visible-top',`${viewport?.offsetTop||0}px`);};update();viewport?.addEventListener('resize',update);viewport?.addEventListener('scroll',update);window.addEventListener('resize',update);return()=>{viewport?.removeEventListener('resize',update);viewport?.removeEventListener('scroll',update);window.removeEventListener('resize',update);};},[]);
- const[user,setUser]=useState<Row|null>(null),[data,setData]=useState<Row|null>(null),[initializing,setInitializing]=useState(true),[error,setError]=useState(''),[page,setPage]=useState('overview'),[compact,setCompact]=useState(()=>localStorage.getItem('copro-simple-compact')==='1'),[mobile,setMobile]=useState(false),[account,setAccount]=useState(false),[version,setVersion]=useState(false);
+ const[user,setUser]=useState<Row|null>(null),[data,setData]=useState<Row|null>(null),[initializing,setInitializing]=useState(true),[error,setError]=useState(''),[page,setPage]=useState('overview'),[compact,setCompact]=useState(()=>localStorage.getItem('copro-simple-compact')==='1'),[mobile,setMobile]=useState(false),[account,setAccount]=useState(false),[version,setVersion]=useState(false),[personal,setPersonal]=useState(false);
  useEffect(()=>{api('session').then(d=>setUser(d.user)).catch(e=>setError(e.message)).finally(()=>setInitializing(false));registerAppWorker();},[]);
  async function load(){setError('');try{setData(await api('state'));}catch(e){setError((e as Error).message);}}
- useEffect(()=>{if(user)void load();else setData(null);},[user]);
- useEffect(()=>{const reset=()=>{setUser(null);setAccount(false);};window.addEventListener('copro:reauthenticate',reset);return()=>window.removeEventListener('copro:reauthenticate',reset);},[]);
+ useEffect(()=>{if(user&&!user.former_owner)void load();else setData(null);},[user]);
+ useEffect(()=>{const archive=()=>{void api('session').then(d=>setUser(d.user));};window.addEventListener('copro:archive',archive);const reset=()=>{setUser(null);setAccount(false);};window.addEventListener('copro:reauthenticate',reset);return()=>{window.removeEventListener('copro:reauthenticate',reset);window.removeEventListener('copro:archive',archive);};},[]);
  useEffect(()=>{if(!mobile||!smallScreen)return;const previous=document.activeElement as HTMLElement|null;sidebar.current?.querySelector<HTMLButtonElement>('.s-mobile-close')?.focus();const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){setMobile(false);return;}if(e.key==='Tab'){const focusable=Array.from(sidebar.current?.querySelectorAll<HTMLElement>('a[href],button:not([disabled])')||[]).filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');const first=focusable[0],last=focusable[focusable.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}};window.addEventListener('keydown',key);return()=>{window.removeEventListener('keydown',key);if(previous?.isConnected)previous.focus({preventScroll:true});};},[mobile,smallScreen]);
  const go=(next:string)=>{setPage(next);setMobile(false);setError('');window.scrollTo({top:0});};
  const activeGroup=groups.find(g=>g.pages.some(([key])=>key===page));
  const title=page==='overview'?'Votre copropriété, en clair':page==='admin'?'Administration':groups.flatMap(g=>g.pages).find(([key])=>key===page)?.[1]||'Copro.';
  if(initializing)return <main className="boot"><BrandMark/><p>Ouverture de votre espace…</p></main>;
  if(!user)return <Login error={error} onLogin={setUser}/>;
+ if(user.former_owner)return <main className="s-archive-page"><h1>Mes archives personnelles</h1><p>Vos documents et versements sont conservés.</p><div className="s-toolbar"><button className="button secondary" onClick={()=>setAccount(true)}>Mon compte</button><button className="button secondary" onClick={async()=>{await api('logout','POST',{});setUser(null);}}>Se déconnecter</button></div><Dossier inline kind="owners" id={user.owner} data={{categories:[]}} user={user} onClose={()=>void 0} onChanged={()=>void 0}/>
+  {account&&<AccountSecurity user={user} onUser={setUser} onClose={()=>setAccount(false)}/>}</main>;
  return <div className={`s-shell ${compact?'s-compact':''}`}>
   {mobile&&<button className="s-nav-backdrop" aria-label="Fermer le menu" onClick={()=>setMobile(false)}/>}
   <aside ref={sidebar} className={`s-side ${mobile?'s-side-open':''}`} aria-label="Navigation principale" inert={smallScreen&&!mobile} role={smallScreen&&mobile?'dialog':undefined} aria-modal={smallScreen&&mobile?true:undefined}>
@@ -52,9 +55,10 @@ export function App(){
   <div className="s-content" inert={smallScreen&&mobile}><header className="s-top"><button ref={menuButton} className="button secondary s-mobile-menu" onClick={()=>setMobile(true)} aria-label="Ouvrir le menu" aria-expanded={mobile}><Icon name="menu"/></button><span><span className="s-top-building">{data?.building.name||'Copro.'}</span><i>/</i><span className="s-top-page">{title}</span></span><div className="s-top-actions"><InstallPwa/><button className="button secondary s-account-button" onClick={()=>setAccount(true)}><Icon name="shield" size={15}/>Mon compte</button></div></header>
    <main><div className="s-heading"><p className="eyebrow">LA COPROPRIÉTÉ, ENSEMBLE</p><h1>{title}</h1><p>{descriptions[page]}</p>{!user.admin&&<span className="s-readonly">Consultation · les modifications sont réservées aux administrateurs</span>}</div>
     {error&&<div className="alert" role="alert">{error}<button className="button secondary" onClick={()=>void load()}>Réessayer</button></div>}
-    {!data?<p role="status">Chargement des informations…</p>:page==='overview'?<Overview data={data} user={user} go={go}/>:['owners','lots'].includes(page)?<Building key={page} section={page} data={data} admin={user.admin} onChange={load}/>:['banks','charges','funds','payments'].includes(page)?<Finance key={page} section={page} data={data} admin={user.admin} onChange={load} user={user}/>:page==='feed'?<Feed data={data} admin={user.admin}/>:['split','installments','vote'].includes(page)?<div className="s-card s-pad"><Tools key={page} section={page}/></div>:page==='admin'&&user.admin?<Administration data={data} onChange={load}/>:null}
+    {!data?<p role="status">Chargement des informations…</p>:page==='overview'?<><button className="button secondary" hidden={!user.owner} onClick={()=>setPersonal(true)}>Mes documents et demandes</button><Overview data={data} user={user} go={go}/></>:['owners','lots'].includes(page)?<Building key={page} section={page} data={data} user={user} admin={user.admin} onChange={load}/>:['banks','charges','funds','payments'].includes(page)?<Finance key={page} section={page} data={data} admin={user.admin} onChange={load} user={user}/>:page==='feed'?<Feed data={data} admin={user.admin} user={user}/>:['split','installments','vote'].includes(page)?<div className="s-card s-pad"><Tools key={page} section={page}/></div>:page==='admin'&&user.admin?<Administration data={data} onChange={load}/>:null}
    </main><footer className="s-footer"><span><strong>Copro.</strong> Une gestion plus simple, ensemble.</span><button className="s-version" onClick={()=>setVersion(true)}>Version {__APP_VERSION__}</button></footer>
   </div>
+  {personal&&data&&<Dossier kind="owners" id={user.owner} data={data} user={user} onClose={()=>setPersonal(false)} onChanged={load}/>}
   {account&&<AccountSecurity user={user} onUser={setUser} onClose={()=>setAccount(false)}/>}
   {version&&<UpdateDialog onClose={()=>setVersion(false)}/>}
  </div>;

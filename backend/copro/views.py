@@ -21,6 +21,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 from .models import Building, Owner, Lot, Ownership, Bank, Call, Allocation, Payment, Category, Post, Attachment, Movement, Operation, Audit, LoginAttempt
+from .permissions import archived_user, former, visible_posts, owner_at
 
 
 def csrf_failure(request, reason=''):
@@ -31,16 +32,18 @@ def user_data(user):
     from .security import status
     owner = Owner.objects.filter(user=user).first()
     return {'id':user.pk, 'name':str(owner) if owner else user.get_full_name() or user.username,
-            'admin':user.is_staff or user.is_superuser, 'owner':owner.pk if owner else None, **status(user)}
+            'admin':user.is_staff or user.is_superuser, 'owner':owner.pk if owner else None, 'former_owner':archived_user(user), **status(user)}
 
 
-def guarded(admin=False, methods=('GET',), readonly=False):
+def guarded(admin=False, methods=('GET',), readonly=False, allow_former=False):
     def decorate(fn):
         @wraps(fn)
         @require_http_methods(methods)
         def wrapped(request, *args, **kwargs):
             if not request.user.is_authenticated:
                 return JsonResponse({'error':'Connexion nécessaire.'}, status=401)
+            if not allow_former and archived_user(request.user):
+                return JsonResponse({'error':'Votre accès conserve uniquement vos archives personnelles.','archived_access':True},status=403)
             if (admin or request.method != 'GET' and not readonly) and not (request.user.is_staff or request.user.is_superuser):
                 return JsonResponse({'error':'Action réservée aux administrateurs.'}, status=403)
             try:
@@ -182,7 +185,7 @@ def allocation_data(item):
 def state(request):
     building,_=Building.objects.get_or_create(pk=1)
     owners=[{'id':o.pk,'first_name':o.first_name,'last_name':o.last_name,'name':str(o),'email':o.email,'phone':o.phone,
-             'active':o.active,'admin':bool(o.user_id and o.user.is_staff),'has_access':bool(o.user_id)} for o in Owner.objects.select_related('user')]
+             'active':o.active,'admin':bool(o.user_id and o.user.is_staff),'former':former(o),'has_access':bool(o.user_id)} for o in Owner.objects.select_related('user')]
     lots=list(Lot.objects.values('id','number','description','shares','owner'))
     banks=[bank_data(b) for b in Bank.objects.all()]
     allocations=[allocation_data(a) for a in Allocation.objects.select_related('call','lot','owner')]
@@ -250,7 +253,7 @@ def lots(request,pk=None):
         item.shares=money(data['shares'],True)
         item.owner=Owner.objects.get(pk=data['owner'],active=True) if data.get('owner') else None
         if previous != item.owner_id and pk:
-            Ownership.objects.create(lot=item,previous_id=previous,owner=item.owner,date=timezone.localdate(),actor=request.user)
+            raise ValueError('Utilisez le dossier du lot puis « Transmettre des lots » pour conserver une passation datée.')
         item.save()
         return {'id':item.pk}
     return transact(request,data,action)
@@ -307,7 +310,9 @@ def charge_preview(data):
         year,month=divmod(offset,12);month+=1
         due=day(date(year,month,min(first.day,calendar.monthrange(year,month)[1])))
         values=distribute(total,[l.shares for l in lots])
-        parts.append({'date':str(due),'amount':str(total),'rows':[{'lot':l.pk,'number':l.number,'owner':l.owner_id,'name':str(l.owner),'shares':str(l.shares),'amount':str(value)} for l,value in zip(lots,values)]})
+        recipients=[owner_at(l,due) for l in lots]
+        if any(o is None for o in recipients):raise ValueError('Un lot n’a pas de propriétaire identifié à cette échéance.')
+        parts.append({'date':str(due),'amount':str(total),'rows':[{'lot':l.pk,'number':l.number,'owner':owner.pk,'name':str(owner),'shares':str(l.shares),'amount':str(value)} for l,owner,value in zip(lots,recipients,values)]})
     result={'label':label,'decision':decision,'kind':kind,'bank':bank.pk,'parts':parts}
     result['hash']=hashlib.sha256(json.dumps(result,sort_keys=True).encode()).hexdigest()
     return result
@@ -378,6 +383,7 @@ def movements(request):
         if kind not in ('expense','income'):raise ValueError('Type de mouvement invalide.')
         amount=money(data['amount'],True)*(-1 if kind=='expense' else 1)
         document=Attachment.objects.get(pk=data['document']) if data.get('document') else None
+        if document and document.post.scope!='copro':raise ValueError('Le justificatif d’une opération commune doit être publié dans le fil de copropriété.')
         item=Movement.objects.create(bank=bank,date=when,label=text(data,'label'),reference=text(data,'reference',150,False),
                                      amount=amount,kind=kind,document=document,actor=request.user)
         return {'id':item.pk}
@@ -385,15 +391,31 @@ def movements(request):
 
 
 def post_data(post):
+    def files(items):
+        return [{'id':a.pk,'name':a.name,'size':a.size} for a in items]
     return {'id':post.pk,'title':post.title,'text':post.text,'category':post.category_id,'category_name':post.category.name,
             'pinned':post.pinned,'date':post.created_at.isoformat(),'author':post.author.get_full_name() or post.author.username,
-            'attachments':[{'id':a.pk,'name':a.name,'size':a.size} for a in post.attachments.all()]}
+            'scope':post.scope,'lot':post.lot_id,'lot_number':post.lot_number,'recipient':post.recipient_id,
+            'recipient_name':post.recipient_name,'kind':post.kind,'status':post.status,'due_on':str(post.due_on) if post.due_on else None,
+            'attachments':files(a for a in post.attachments.all() if not a.reply_id),
+            'replies':[{'id':r.pk,'text':r.text,'date':r.created_at.isoformat(),'owner':r.owner_id,
+                        'attachments':files(r.attachments.all())} for r in post.replies.all()]}
 
 
-@guarded(methods=('GET','POST'))
+@guarded(methods=('GET','POST'),allow_former=True)
 def posts(request,pk=None):
+    from .uploads import validate_files,write_files
     if request.method=='GET':
-        items=Post.objects.select_related('author','category').prefetch_related('attachments')
+        items=visible_posts(request.user).select_related('author','category').prefetch_related('attachments','replies__attachments')
+        if request.GET.get('lot'):
+            from .dossiers import accessible_lot
+            lot=accessible_lot(request.user,int(request.GET['lot']))
+            items=items.filter(lot=lot)
+        elif request.GET.get('owner'):
+            from .dossiers import accessible_owner
+            owner=accessible_owner(request.user,int(request.GET['owner']))
+            items=items.filter(recipient=owner,scope='owner')
+        else:items=items.filter(scope='copro')
         if request.GET.get('category'):items=items.filter(category_id=int(request.GET['category']))
         if request.GET.get('search'):
             from django.db.models import Q
@@ -402,22 +424,35 @@ def posts(request,pk=None):
         return JsonResponse({'items':[post_data(p) for p in items[(page-1)*30:page*30]],'page':page,'pages':max(1,(count+29)//30),'count':count})
     data=request.POST
     title=text(data,'title');body=text(data,'text',15000);category=Category.objects.get(pk=data['category'],active=True)
-    files=request.FILES.getlist('files')
     existing=Post.objects.get(pk=pk) if pk else None
-    if len(files)+(existing.attachments.count() if existing else 0)>8:raise ValueError('8 pièces jointes maximum par publication.')
-    if sum(file.size for file in files)>12*1024*1024:raise ValueError('12 Mo maximum pour l’ensemble des pièces d’une publication.')
-    allowed={'.pdf','.png','.jpg','.jpeg','.txt','.docx','.xlsx','.odt','.ods','.csv'}
-    for file in files:
-        if Path(file.name).suffix.lower() not in allowed or file.size>10*1024*1024:
-            raise ValueError('Pièce jointe refusée : PDF, image, texte ou document bureautique de 10 Mo maximum.')
+    scope=data.get('scope',existing.scope if existing else 'copro')
+    kind=data.get('kind',existing.kind if existing else 'info')
+    lot=Lot.objects.get(pk=data['lot']) if data.get('lot') else (existing.lot if existing else None)
+    recipient=Owner.objects.get(pk=data['recipient']) if data.get('recipient') else (existing.recipient if existing else None)
+    if scope not in ('copro','lot','owner') or kind not in ('info','call','request'):raise ValueError('Classement invalide.')
+    if scope=='copro' and (lot or recipient):raise ValueError('Une publication commune ne désigne pas un destinataire ou un lot privé.')
+    if scope=='lot' and (not lot or recipient):raise ValueError('Choisissez un lot pour les pièces techniques transmissibles.')
+    if scope=='owner' and not recipient:raise ValueError('Choisissez le destinataire du document personnel.')
+    if kind in ('call','request') and scope!='owner':raise ValueError('Un appel nominatif ou une demande est réservé à son destinataire.')
+    if existing and (scope,lot.pk if lot else None,recipient.pk if recipient else None,kind)!=(existing.scope,existing.lot_id,existing.recipient_id,existing.kind):
+        raise ValueError('Le lot, le destinataire et le type d’une publication existante sont conservés. Créez une autre publication.')
+    if not existing and kind=='request' and (not recipient.active or former(recipient) or (lot and lot.owner_id!=recipient.pk)):
+        raise ValueError('Une nouvelle demande doit viser le propriétaire actuel du lot.')
+    due=day(data['due_on']) if data.get('due_on') else (existing.due_on if existing else None)
+    files=request.FILES.getlist('files');validate_files(files,sum(not a.reply_id for a in existing.attachments.all()) if existing else 0)
     stored=[]
     try:
         with transaction.atomic():
+            Building.objects.get_or_create(pk=1)
+            Building.objects.select_for_update().get(pk=1)
+            if not existing and kind=='request' and lot and Lot.objects.get(pk=lot.pk).owner_id!=recipient.pk:
+                raise ValueError('Le propriétaire du lot a changé. Rechargez le dossier.')
             post=Post.objects.select_for_update().get(pk=pk) if pk else Post(author=request.user)
-            post.title=title;post.text=body;post.category=category;post.pinned=data.get('pinned')=='true';post.save()
-            for file in files:
-                item=Attachment(post=post,name=Path(file.name).name[:200],size=file.size)
-                item.file.save(file.name,file,save=False);stored.append(item.file);item.save()
+            post.title=title;post.text=body;post.category=category;post.pinned=data.get('pinned')=='true';post.due_on=due
+            if not existing:
+                post.scope=scope;post.kind=kind;post.lot=lot;post.recipient=recipient
+                post.recipient_name=str(recipient) if recipient else '';post.lot_number=lot.number if lot else ''
+            post.save();write_files(post,files,stored)
             Audit.objects.create(actor=request.user,action='publication',target=str(post.pk))
         return JsonResponse({'id':post.pk})
     except Exception:
@@ -425,9 +460,9 @@ def posts(request,pk=None):
         raise
 
 
-@guarded()
+@guarded(allow_former=True)
 def download(request,pk):
-    item=Attachment.objects.get(pk=pk)
+    item=Attachment.objects.filter(post__in=visible_posts(request.user)).get(pk=pk)
     try:handle=item.file.open('rb')
     except FileNotFoundError:return JsonResponse({'error':'Pièce absente du stockage. Restaurez la sauvegarde des documents.'},status=404)
     return FileResponse(handle,as_attachment=True,filename=item.name,content_type='application/octet-stream')

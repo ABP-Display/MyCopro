@@ -13,9 +13,20 @@ Depuis une fiche copropriétaire, un administrateur peut réinitialiser les acc�
 - **Vie de la copropriété** : fil de publications avec texte, pièces jointes, recherche, catégories personnalisables et informations à la une.
 - **Outils** : répartition annuelle/mensuelle/trimestrielle, simulation d’échéances et calcul de majorité avec liste des copropriétaires ou saisie libre. Les simulations ne créent aucune opération.
 
-Les copropriétaires consultent toutes ces rubriques et utilisent les simulateurs. Les écritures, publications, modifications et validations sont réservées aux administrateurs, avec contrôle côté serveur. **Administration** n’apparaît que pour eux : coordonnées, catégories, rôles et historique. Chacun peut modifier son propre mot de passe.
+Les copropriétaires actuels consultent toutes ces rubriques et utilisent les simulateurs. Les écritures, publications, modifications et validations sont réservées aux administrateurs, avec contrôle côté serveur. **Administration** n’apparaît que pour eux : coordonnées, catégories, rôles et historique. Chacun peut modifier son propre mot de passe et répondre aux demandes qui lui sont adressées dans son dossier.
 
 **Mon compte & sécurité** regroupe le changement de mot de passe et l’A2F facultative : QR code ou clé manuelle TOTP, confirmation du premier code, date d’activation et huit codes de secours à usage unique. La désactivation exige le mot de passe et un code valide. Les clés sont chiffrées dans la base ; les codes déjà utilisés sont refusés. Conservez `DJANGO_SECRET_KEY` avec votre configuration privée pour pouvoir restaurer les clés A2F.
+
+## Dossiers des lots et archives personnelles
+
+Cliquez sur le nom d’un copropriétaire (votre fiche ou toute fiche pour un administrateur), ou sur le numéro de l’un de vos lots, pour ouvrir son dossier : publications classées, pièces jointes, demandes de renseignements, appels et versements.
+
+- **Technique du lot** : visible par son propriétaire actuel et les administrateurs ; suit le lot lors d’une passation.
+- **Personnel** : destinataire et administrateurs seulement ; les appels PDF déposés, réponses et justificatifs restent au destinataire après son départ.
+- **Demandes** : l’administrateur demande par exemple un relevé d’eau ; le destinataire répond avec texte et fichiers, puis l’administrateur clôture.
+- **Passation** : depuis un dossier de lot, un administrateur sélectionne un ou plusieurs lots, le nouveau propriétaire, la date effective et une référence. Un aperçu précède la confirmation. Les documents et opérations passés ne sont pas réaffectés ; les demandes ouvertes sur les lots transférés sont clôturées.
+
+Après son dernier lot, un membre conserve uniquement ses archives personnelles et les réglages de sécurité de son compte. Un administrateur conserve son rôle : vérifiez ses permissions dans Administration lors du départ. La passation ne transfère pas automatiquement des dettes ou des soldes. Les PDF sont déposés en pièces jointes ; leur génération automatique reste hors du périmètre actuel.
 
 ## Démarrer
 

@@ -13,6 +13,7 @@ export async function api<T=Record<string,any>>(path:string,method='GET',body?:u
   }
   const value=await response.json();
   if(response.status===401&&!route.startsWith('login'))window.dispatchEvent(new Event('copro:reauthenticate'));
+  if(value.archived_access)window.dispatchEvent(new Event('copro:archive'));
   if(value.csrf)csrf=value.csrf;
   if(!response.ok)throw new Error(value.error||'La demande a échoué. Réessayez.');
   return value;
