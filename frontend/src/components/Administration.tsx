@@ -1,12 +1,12 @@
 import {useEffect,useState} from 'react';
 import {api,newOperationId} from '../api';
-import {EditForm,Table,dateLabel,type Row} from './Common';
+import {EditForm,Table,EditButton,dateLabel,type Row} from './Common';
 
 export function Administration({data,onChange}:{data:Row;onChange:()=>void}){
  const[editor,setEditor]=useState<Row|null>(null),[audit,setAudit]=useState<Row[]>([]),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  useEffect(()=>{api('administration/audit').then(r=>setAudit(r.items)).catch(e=>setError(e.message));},[data]);
  return <div className="s-list">{error&&<p className="alert" role="alert">{error}</p>}
-  <section className="s-card s-pad"><div className="s-card-title"><div><h2>Votre copropriété</h2><p className="s-hint">{data.building.name}<br/>{data.building.address}</p></div><button className="button secondary" onClick={()=>setEditor({kind:'building',item:data.building})}>Modifier les coordonnées</button></div></section>
+  <section className="s-card s-pad"><div className="s-card-title"><div><h2>Votre copropriété</h2><p className="s-hint">{data.building.name}<br/>{data.building.address}</p></div><EditButton label="Modifier les coordonnées" onClick={()=>setEditor({kind:'building',item:data.building})}/></div></section>
   <section className="s-card s-pad"><div className="s-card-title"><div><h2>Catégories du fil</h2><p className="s-hint">Classez les textes et documents par sujet. Une catégorie désactivée conserve ses publications.</p></div><button className="button primary" onClick={()=>setEditor({kind:'categories',item:{name:'',active:true}})}>Ajouter une catégorie</button></div><div className="s-category-list">{data.categories.map((c:Row)=><button className="button secondary" key={c.id} onClick={()=>setEditor({kind:'categories',item:c})}>{c.name}{!c.active?' · inactive':''}</button>)}</div></section>
   <section className="s-card s-pad"><h2>Accès des copropriétaires</h2><p className="s-hint">Les accès sont créés et les mots de passe réinitialisés dans Immeuble → Copropriétaires. Un administrateur peut modifier les données ; les autres comptes consultent l’ensemble de l’application et utilisent les simulateurs.</p><Table headers={['Personne','Compte','Rôle']} rows={data.owners.map((o:Row)=>[o.name,o.active?'Actif':'Désactivé',<select aria-label={`Rôle de ${o.name}`} disabled={busy} value={o.admin?'admin':'reader'} onChange={async e=>{setBusy(true);setError('');try{await api('administration/access','POST',{owner:o.id,admin:e.target.value==='admin',request_id:newOperationId()});onChange();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}}><option value="reader">Lecture seule</option><option value="admin">Administrateur</option></select>])}/></section>
   <section className="s-card s-pad"><h2>Dernières actions de gestion</h2><Table headers={['Date','Compte','Action','Référence']} rows={audit.map(a=>[dateLabel(a.date),a.actor,a.action,a.target])}/></section>

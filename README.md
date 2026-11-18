@@ -2,7 +2,9 @@
 
 Une application pour un syndic bénévole ou coopératif, en React, Django et PostgreSQL. Le design Copro. est conservé : couleurs vertes, logo, texte courant de 14 px, menu compact et affichage mobile.
 
-Sur téléphone : connexion compacte, menu superposé, listes en fiches lisibles, champs tactiles et fenêtres à défilement interne. Le thème et les tableaux de la version ordinateur sont conservés.
+Les listes de copropriétaires, lots, paiements et mouvements sont présentées en cartes, disposées en grille sur ordinateur et empilées sur téléphone. Les actions de modification utilisent un bouton stylo avec un libellé accessible. La connexion compacte, le menu superposé, les champs tactiles et les fenêtres à défilement interne conservent le thème Copro.
+
+Depuis une fiche copropriétaire, un administrateur peut réinitialiser les accès après aperçu, puis ouvrir un courriel préparé avec lien, identifiant et nouveau mot de passe. Aucun message n’est envoyé automatiquement. L’adresse publique utilisée se règle avec `COPRO_PUBLIC_URL` ; l’A2F du compte est conservée.
 
 ## Quatre rubriques
 

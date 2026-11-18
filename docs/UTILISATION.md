@@ -6,6 +6,12 @@ Connectez-vous avec le compte principal. Dans Administration, indiquez le nom de
 
 Chaque copropriétaire a accès aux pages partagées en lecture : personnes et lots, comptes, charges, paiements, publications et outils. Les données financières de tous sont donc partagées dans ce périmètre, conformément au fonctionnement demandé. Les identifiants de session et mots de passe ne sont jamais listés. L’administration et les actions de modification exigent un rôle administrateur côté serveur.
 
+Les listes sont des cartes : le nom ou la référence se trouve en tête, les informations sont regroupées dessous et le bouton stylo ouvre la modification. Dans une carte copropriétaire, la flèche circulaire prépare une réinitialisation des accès. La fenêtre affiche le destinataire, un nouveau mot de passe généré et l’aperçu du message. Le mot de passe actuel n’est remplacé qu’en cliquant sur Confirmer et préparer le courriel.
+
+Une fois la réinitialisation confirmée, Ouvrir le courriel dans ma messagerie prépare un message avec le lien de connexion, l’identifiant réel et le nouveau mot de passe. Vous devez envoyer le message depuis votre messagerie. Le mot de passe généré n’est pas conservé en clair dans l’historique de l’application et n’est plus affiché après fermeture de cette fenêtre. Les anciennes sessions du destinataire sont invalidées ; son A2F reste active. Votre propre mot de passe se modifie dans Mon compte. Un compte inactif doit d’abord être réactivé.
+
+Configurez `COPRO_PUBLIC_URL` avec l’adresse accessible aux copropriétaires, par exemple `https://copro.ydoxide.fr`, puis recréez le service backend. Cette adresse sert au lien de connexion du courriel ; elle évite d’envoyer un lien localhost inutilisable depuis un autre appareil. Ne réinitialisez pas une seconde fois uniquement pour rouvrir le brouillon : conservez le courriel préparé avant de fermer la fenêtre.
+
 Créez les lots avec leurs tantièmes et leur propriétaire. Un changement de propriétaire est historisé ; les anciens appels et paiements restent attribués à leur propriétaire d’origine. La nouvelle base n’effectue pas de régularisation juridique automatique à la vente.
 
 ## Comptes et charges
@@ -56,4 +62,4 @@ Les outils sont accessibles à tous : ils calculent sans enregistrer d’opérat
 
 Sur téléphone, utilisez le bouton de menu en haut. La version en bas de page propose de recharger l’application. L’installation PWA exige HTTPS (sauf localhost). Les fonctions privées nécessitent une connexion au serveur. L’affichage est contrôlé dans des navigateurs à plusieurs largeurs ; les comportements propres à Safari et à un téléphone réel restent à vérifier sur votre appareil.
 
-La connexion adopte un bandeau compact sur petit écran pour laisser le formulaire accessible. Les listes de copropriétaires, lots, paiements et mouvements sont présentées en fiches avec leurs libellés sur téléphone ; les tableaux restent disponibles sur ordinateur et à l’impression. Le menu s’ouvre au-dessus du contenu, possède un bouton Fermer et conserve son défilement propre. Les formulaires longs défilent sous leur en-tête, avec un espace adapté à la hauteur visible. Les champs tactiles évitent le zoom automatique de saisie sans désactiver le zoom manuel.
+La connexion adopte un bandeau compact sur petit écran pour laisser le formulaire accessible. Les listes de copropriétaires, lots, paiements et mouvements sont des cartes avec leurs libellés, en grille sur ordinateur et empilées sur téléphone. Le menu s’ouvre au-dessus du contenu, possède un bouton Fermer et conserve son défilement propre. Les formulaires longs défilent sous leur en-tête, avec un espace adapté à la hauteur visible. Les champs tactiles évitent le zoom automatique de saisie sans désactiver le zoom manuel.

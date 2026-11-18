@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/health/',views.health),path('api/session/',views.session),
     path('api/login/',views.login),path('api/logout/',views.logout),path('api/password/',views.password),
     path('api/state/',views.state),path('api/owners/',views.owners),path('api/owners/<int:pk>/',views.owners),
+    path('api/owners/<int:pk>/reset-access/',views.reset_access),
     path('api/lots/',views.lots),path('api/lots/<int:pk>/',views.lots),
     path('api/banks/',views.banks),path('api/banks/<int:pk>/',views.banks),
     path('api/calls/<str:action>/',views.calls),path('api/payments/',views.payments),

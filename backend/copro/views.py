@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import validate_email
+from django.conf import settings
 from django.db import transaction, IntegrityError
 from django.db.models import Sum
 from django.http import JsonResponse, FileResponse
@@ -166,6 +167,10 @@ def bank_data(bank):
             'balance':str(bank.opening_balance+net)}
 
 
+def login_url(request):
+    return (settings.COPRO_PUBLIC_URL or request.build_absolute_uri('/').rstrip('/'))+'/connexion'
+
+
 def allocation_data(item):
     paid = item.payment_set.filter(status='validated').aggregate(total=Sum('amount'))['total'] or Decimal(0)
     return {'id':item.pk,'call':item.call_id,'label':item.call.label,'kind':item.call.kind,'due_date':str(item.call.due_date),
@@ -188,7 +193,7 @@ def state(request):
             'bank':c.bank_id} for c in Call.objects.all()]
     movements=[{'id':m.pk,'bank':m.bank_id,'date':str(m.date),'label':m.label,'reference':m.reference,'amount':str(m.amount),
                 'kind':m.kind,'payment':m.payment_id,'document':m.document_id} for m in Movement.objects.all()]
-    return JsonResponse({'building':{'name':building.name,'address':building.address},'owners':owners,'lots':lots,
+    return JsonResponse({'building':{'name':building.name,'address':building.address,'login_url':login_url(request)},'owners':owners,'lots':lots,
                          'banks':banks,'allocations':allocations,'payments':payments,'calls':calls,'movements':movements,
                          'categories':list(Category.objects.values('id','name','active'))})
 
@@ -212,6 +217,26 @@ def owners(request, pk=None):
             validate_password(chosen,user);user.set_password(chosen)
         user.save();item.user=user;item.save()
         return {'id':item.pk}
+    return transact(request,data,action)
+
+
+@guarded(admin=True,methods=('POST',))
+def reset_access(request,pk):
+    data=payload(request)
+    def action():
+        owner=Owner.objects.select_related('user').get(pk=pk)
+        if not owner.user_id or not owner.active or not owner.user.is_active:
+            raise ValueError('Réactivez le compte de cette personne avant de réinitialiser ses accès.')
+        user=get_user_model().objects.select_for_update().get(pk=owner.user_id)
+        if user.pk==request.user.pk:
+            raise ValueError('Modifiez votre propre mot de passe dans Mon compte.')
+        if user.is_superuser:
+            raise ValueError('Le compte principal se gère depuis Mon compte.')
+        chosen=text(data,'password',128)
+        validate_password(chosen,user)
+        user.set_password(chosen);user.save(update_fields=['password'])
+        # Never put the clear-text password in the persisted idempotency response.
+        return {'id':owner.pk,'name':str(owner),'email':owner.email,'login':user.username,'login_url':login_url(request)}
     return transact(request,data,action)
 
 

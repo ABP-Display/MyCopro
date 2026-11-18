@@ -1,6 +1,6 @@
 import {useState,useEffect} from 'react';
 import {api,newOperationId} from '../api';
-import {EditForm,Fields,Modal,Table,Metrics,Empty,money,today,dateLabel,type Field,type Row} from './Common';
+import {EditForm,Fields,Modal,Table,EditButton,Metrics,Empty,money,today,dateLabel,type Field,type Row} from './Common';
 const kinds:Row={charges:'Charges courantes',works:'Fonds travaux',exceptional:'Appel exceptionnel'};
 const byYear=(date:string,year:string)=>date.slice(0,4)===year;
 export function Finance({section,data,admin,onChange,user}:{section:string;data:Row;admin:boolean;onChange:()=>void;user:Row}){
@@ -16,7 +16,7 @@ export function Finance({section,data,admin,onChange,user}:{section:string;data:
   {key:'opening_balance',label:'Solde de départ (€)',type:'number',required:true,readonly:!!modal?.item?.id},
   {key:'opened_on',label:'Date du solde de départ',type:'date',required:true,readonly:!!modal?.item?.id},{key:'active',label:'Compte actif',type:'checkbox'}];
  async function decision(id:number,action:string){setBusy(true);setError('');try{await api(`payments/${id}/${action}`,'POST',{request_id:newOperationId()});onChange();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
- const balanceRows=data.banks.map((bank:Row)=><article key={bank.id} className="s-card s-bank"><div className="s-card-title"><div><span className="s-tag">{bank.active?'Compte actif':'Compte inactif'}</span><h2>{bank.name}</h2></div><strong className="s-bank-balance">{money(bank.balance)}</strong></div><dl><div><dt>Titulaire</dt><dd>{bank.holder}</dd></div><div><dt>Banque</dt><dd>{bank.institution||'—'}</dd></div><div><dt>IBAN</dt><dd>{bank.iban||'À renseigner'}</dd></div><div><dt>BIC</dt><dd>{bank.bic||'—'}</dd></div></dl><div className="s-actions"><button className="button secondary" onClick={()=>setModal({kind:'history',item:bank})}>Voir les mouvements</button>{admin&&<button className="button secondary" onClick={()=>setModal({kind:'bank',item:bank})}>Modifier</button>}</div></article>);
+ const balanceRows=data.banks.map((bank:Row)=><article key={bank.id} className="s-card s-bank"><div className="s-card-title"><div><span className="s-tag">{bank.active?'Compte actif':'Compte inactif'}</span><h2>{bank.name}</h2></div><strong className="s-bank-balance">{money(bank.balance)}</strong></div><dl><div><dt>Titulaire</dt><dd>{bank.holder}</dd></div><div><dt>Banque</dt><dd>{bank.institution||'—'}</dd></div><div><dt>IBAN</dt><dd>{bank.iban||'À renseigner'}</dd></div><div><dt>BIC</dt><dd>{bank.bic||'—'}</dd></div></dl><div className="s-actions"><button className="button secondary" onClick={()=>setModal({kind:'history',item:bank})}>Voir les mouvements</button>{admin&&<EditButton label={`Modifier le compte ${bank.name}`} onClick={()=>setModal({kind:'bank',item:bank})}/>}</div></article>);
  return <>
   {error&&<p className="alert" role="alert">{error}</p>}
   {section==='banks'?<>

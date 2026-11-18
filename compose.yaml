@@ -22,6 +22,7 @@ services:
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,copro.ydoxide.fr}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-https://copro.ydoxide.fr}
       HTTPS_ONLY: ${HTTPS_ONLY:-0}
+      COPRO_PUBLIC_URL: ${COPRO_PUBLIC_URL:-https://copro.ydoxide.fr}
       POSTGRES_HOST: db
       POSTGRES_DB: copro_simple
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Compléter .env}

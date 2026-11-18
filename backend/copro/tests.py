@@ -7,6 +7,7 @@ from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client, override_settings
+from django.utils import timezone
 from .models import Building, Owner, Lot, Bank, Movement, Call, Allocation, Payment, Category, Attachment, Post, Ownership
 from .calculations import vote_result, split_result, installment_result
 
@@ -158,3 +159,35 @@ class SimpleCoproTests(TestCase):
         self.assertEqual(sum(Decimal(r['amount']) for r in installment_result({'amount':'10','count':3})['rows']),10)
         result=vote_result({'rule':'24','total_votes':1000,'total_owners':3,'participating_owners':3,'for_owners':1,'for_votes':400,'against_votes':300,'abstain_votes':300})
         self.assertTrue(result['adopted'])
+
+    @override_settings(COPRO_PUBLIC_URL='https://copro.example.test')
+    def test_reset_access_changes_password_once_without_storing_cleartext(self):
+        from .models import Operation, Audit, MFA
+        protection=MFA.objects.create(user=self.reader,secret='existing-encrypted-value',enabled_at=timezone.now())
+        original_generation=protection.generation
+        token=str(uuid4());chosen='NewGeneratedPassword871!'
+        body={'password':chosen,'request_id':token}
+        first=self.send(f'owners/{self.owner.pk}/reset-access',body)
+        self.assertEqual(first.status_code,200,first.content)
+        self.assertEqual(first.json()['login'],self.reader.username)
+        self.assertEqual(first.json()['email'],self.owner.email)
+        self.assertEqual(first.json()['login_url'],'https://copro.example.test/connexion')
+        self.reader.refresh_from_db();self.assertTrue(self.reader.check_password(chosen))
+        self.assertNotIn(chosen,first.content.decode())
+        self.assertNotIn(chosen,json.dumps(Operation.objects.get(token=token).response))
+        audit_count=Audit.objects.count()
+        second=self.send(f'owners/{self.owner.pk}/reset-access',body)
+        self.assertEqual(second.status_code,200);self.assertEqual(Audit.objects.count(),audit_count)
+        protection.refresh_from_db();self.assertEqual(protection.generation,original_generation)
+        self.assertIsNotNone(protection.enabled_at)
+        self.assertEqual(self.member.get('/api/state/').status_code,401)
+
+    def test_reset_access_is_admin_only_and_checks_account_and_password(self):
+        chosen='ResetGeneratedPassword871!'
+        self.assertEqual(self.send(f'owners/{self.owner.pk}/reset-access',{'password':chosen},self.member).status_code,403)
+        self.assertEqual(self.send(f'owners/{self.owner.pk}/reset-access',{'password':'short'}).status_code,400)
+        self.reader.refresh_from_db();self.assertTrue(self.reader.check_password('AliceTestPassword123!'))
+        self.owner.active=False;self.owner.save()
+        self.assertEqual(self.send(f'owners/{self.owner.pk}/reset-access',{'password':chosen}).status_code,400)
+        mine=Owner.objects.create(first_name='Admin',last_name='Test',email='admin@example.test',user=self.admin)
+        self.assertEqual(self.send(f'owners/{mine.pk}/reset-access',{'password':chosen}).status_code,400)
