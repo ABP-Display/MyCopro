@@ -534,9 +534,9 @@ export function Tools({ section }: { section: string }) {
             </button>
           </div>
           <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
+            <table role="table">
+              <thead role="rowgroup">
+                <tr role="row">
                   <th>{section === "split" ? "Part" : "Échéance"}</th>
                   {section === "split" && <th>Poids</th>}
                   <th className="tool-money">{section === "split" ? "Par an" : "Montant"}</th>
@@ -546,26 +546,26 @@ export function Tools({ section }: { section: string }) {
                   </>}
                 </tr>
               </thead>
-              <tbody>
+              <tbody role="rowgroup">
                 {result.rows.map((row: ToolData, index: number) => (
-                  <tr key={index}>
-                    <td>{row.label || `Échéance ${row.number}`}</td>
-                    {section === "split" && <td>{row.weight}</td>}
-                    <td className="tool-money">{euro(row.amount)}</td>
+                  <tr role="row" key={index}>
+                    <td role="cell" data-label={section === "split" ? "Copropriétaire / part" : "Échéance"}>{row.label || `Échéance ${row.number}`}</td>
+                    {section === "split" && <td role="cell" data-label="Tantièmes">{row.weight}</td>}
+                    <td role="cell" data-label={section === "split" ? "Par an" : "Montant"} className="tool-money">{euro(row.amount)}</td>
                     {section === "split" && <>
-                      <td className="tool-money">{euro(Number(row.amount) / 4)}</td>
-                      <td className="tool-money">{euro(Number(row.amount) / 12)}</td>
+                      <td role="cell" data-label="Par trimestre" className="tool-money">{euro(Number(row.amount) / 4)}</td>
+                      <td role="cell" data-label="Par mois" className="tool-money">{euro(Number(row.amount) / 12)}</td>
                     </>}
                   </tr>
                 ))}
               </tbody>
               {section === "split" && (
-                <tfoot>
-                  <tr>
+                <tfoot role="rowgroup">
+                  <tr role="row">
                     <th scope="row" colSpan={2}>Total annuel réparti</th>
-                    <td className="tool-money">{euro(result.total)}</td>
-                    <td className="tool-money">{euro(Number(result.total) / 4)}</td>
-                    <td className="tool-money">{euro(Number(result.total) / 12)}</td>
+                    <td role="cell" data-label="Par an" className="tool-money">{euro(result.total)}</td>
+                    <td role="cell" data-label="Par trimestre" className="tool-money">{euro(Number(result.total) / 4)}</td>
+                    <td role="cell" data-label="Par mois" className="tool-money">{euro(Number(result.total) / 12)}</td>
                   </tr>
                 </tfoot>
               )}
